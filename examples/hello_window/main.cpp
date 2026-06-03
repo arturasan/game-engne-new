@@ -3,9 +3,9 @@
 // exists today to prove the App + Schedule + Plugin scaffolding builds and
 // runs as an executable on both Linux and Windows.
 
-#include "engine/core/app.hpp"
-
 #include <cstdio>
+
+#include "engine/core/app.hpp"
 
 namespace {
 
@@ -17,7 +17,7 @@ struct LogFramePlugin {
     }
 };
 
-}  // namespace
+} // namespace
 
 int main() {
     engine::App app;

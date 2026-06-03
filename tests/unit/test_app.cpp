@@ -24,7 +24,9 @@ TEST_CASE("App::run honors request_exit from a system" * doctest::test_suite("fa
 TEST_CASE("Plugin::build is invoked by add_plugin" * doctest::test_suite("fast")) {
     struct CountPlugin {
         int* counter;
-        void build(engine::App&) const { ++*counter; }
+        void build(engine::App&) const {
+            ++*counter;
+        }
     };
     int counter = 0;
     engine::App app;
