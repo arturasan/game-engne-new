@@ -1,8 +1,11 @@
 # 0009 — Deterministic replay harness
 
 - Owner: TBD
+- Milestone: M1
 - Status: draft
 - Tracking issue: TBD
+- Implementation PR: TBD
+- Merged in: TBD
 
 ## Scope
 

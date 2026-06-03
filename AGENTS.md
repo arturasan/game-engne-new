@@ -51,6 +51,16 @@ Active presets: `linux-clang-asan`, `linux-gcc-rel`. The `win-*` presets remain 
 - `specs/` — per-PR feature specs
 - `build/logs/last_run.jsonl` — structured JSON logs from the most recent example run. **Always grep this before guessing what went wrong.**
 
+## Agent checklist
+
+Before implementation work:
+
+1. Read this file.
+2. Locate the roadmap milestone in `docs/roadmap.md`.
+3. Read the current spec in `specs/`.
+4. Update the spec status, checklist, and PR link when opening a PR.
+5. Do not implement future architecture text unless the active spec requires it.
+
 ## Test framework
 
 doctest. Tag tests `[fast]` (must run in <100ms) or `[slow]`. `cmake --workflow --preset check` runs only `[fast]`.

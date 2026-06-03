@@ -1,8 +1,11 @@
 # 0005 — Renderer: clear color (SDL3 GPU hidden)
 
 - Owner: TBD
+- Milestone: M1
 - Status: draft
 - Tracking issue: TBD
+- Implementation PR: TBD
+- Merged in: TBD
 - Implements: ADR 0003
 
 ## Scope

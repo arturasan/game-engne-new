@@ -26,20 +26,23 @@ The Phase-0 scaffold now builds and tests on the Fedora path. The historical che
 
 The smallest possible end-to-end engine: open a window, run an ECS world, render a sprite, play a sound, exit cleanly. Everything an agent needs to verify "the engine works" by looking at pixels and listening to a beep.
 
-| Spec | Title | Sizing |
-|---|---|---|
-| 0001 | ECS archetype storage | 1.5 wk |
-| 0002 | Platform: Window + Input (SDL3 hidden) | 0.5 wk |
-| 0003 | Logging + structured JSON sink | 0.3 wk |
-| 0004 | Resources + Events | 0.5 wk |
-| 0005 | Renderer abstraction — clear color (SDL3 GPU hidden, ADR 0003) | 1 wk |
-| 0006 | Transform + Camera2d/Camera3d | 0.3 wk |
-| 0007 | Asset system v0 (Handle, synchronous loader) | 0.7 wk |
-| 0008 | Sprite plugin — first sprite on screen | 0.7 wk |
-| 0009 | Deterministic replay harness | 0.5 wk |
-| 0010 | Screenshot diff harness + first golden PNG | 0.5 wk |
-| 0011 | PBR mesh plugin — first lit cube (3D) | 1 wk |
-| 0012 | Audio v0 — play a wav | 0.3 wk |
+Current specs in `specs/` are M1 backlog unless their metadata marks them `deferred` or sets `Milestone: Future`. Spec `0013` exists because commands were split out of `0004` after resources/events merged; it remains M1 backlog so M2 scheduler planning starts from a clean deferred-mutation contract.
+
+| Spec | Title | Status | Sizing |
+|---|---|---|---|
+| 0001 | ECS archetype storage | implemented | 1.5 wk |
+| 0002 | Platform: Window + Input (SDL3 hidden) | implemented | 0.5 wk |
+| 0003 | Logging + structured JSON sink | implemented | 0.3 wk |
+| 0004 | Resources + Events | implemented | 0.5 wk |
+| 0005 | Renderer abstraction — clear color (SDL3 GPU hidden, ADR 0003) | draft | 1 wk |
+| 0006 | Transform + Camera2d/Camera3d | draft | 0.3 wk |
+| 0007 | Asset system v0 (Handle, synchronous loader) | draft | 0.7 wk |
+| 0008 | Sprite plugin — first sprite on screen | draft | 0.7 wk |
+| 0009 | Deterministic replay harness | draft | 0.5 wk |
+| 0010 | Screenshot diff harness + first golden PNG | draft | 0.5 wk |
+| 0011 | PBR mesh plugin — first lit cube (3D) | draft | 1 wk |
+| 0012 | Audio v0 — play a wav | draft | 0.3 wk |
+| 0013 | Commands: deferred world mutation | draft | TBD |
 
 **Demo gate:** `examples/sprite_demo` renders a sprite with input-driven movement; `examples/pbr_demo` renders a lit rotating cube; `examples/audio_demo` plays a beep on keypress. All three examples produce stable screenshot/replay outputs in CI.
 
@@ -47,6 +50,7 @@ The smallest possible end-to-end engine: open a window, run an ECS world, render
 
 ```
 0001 ECS ─┬─> 0004 Resources/Events ─┬─> 0006 Transform ─┬─> 0008 Sprite ──┐
+          │                          ├─> 0013 Commands                     │
           │                          │                   ├─> 0011 PBR  ────┤
           └──────────────────────────┘                   │                 │
 0002 Window ──> 0005 Renderer ──────────────────────────┘                 │
@@ -60,13 +64,13 @@ The smallest possible end-to-end engine: open a window, run an ECS world, render
                                   0012 Audio ────────────────────────────┘
 ```
 
-Specs 0001, 0002, 0003, 0007 are **leaves** (no deps) — work on them in parallel if multiple agents are available.
+Specs 0001, 0002, 0003, 0007 are **leaves** (no deps) — work on them in parallel if multiple agents are available. Specs 0001 through 0004 are now implemented, so the lowest-numbered draft spec is 0005.
 
 ---
 
 ## M2 — Renderer maturity *(~5 weeks)*
 
-Make the renderer pleasant to use, not just functional. Material system, render graph, multi-camera, post-processing hooks.
+Make the renderer pleasant to use, not just functional. Material system, render graph, multi-camera, post-processing hooks. M2 planning starts only after the M1 completion review; do not create M2 specs or assign new M2 spec numbers before that review.
 
 - Material/shader authoring API (the *only* place backend types leak, behind `detail::backend_handle`)
 - Render graph (nodes, edges, resource lifetimes)

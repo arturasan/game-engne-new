@@ -1,8 +1,11 @@
 # 0013 — Commands: deferred world mutation
 
 - Owner: TBD
+- Milestone: M1
 - Status: draft
 - Tracking issue: TBD
+- Implementation PR: TBD
+- Merged in: TBD
 - Depends on: 0001 (ECS), 0004 (resources & events)
 
 ## Scope

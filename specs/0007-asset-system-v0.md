@@ -1,8 +1,11 @@
 # 0007 — Asset system v0
 
 - Owner: TBD
+- Milestone: M1
 - Status: draft
 - Tracking issue: TBD
+- Implementation PR: TBD
+- Merged in: TBD
 
 ## Scope
 
