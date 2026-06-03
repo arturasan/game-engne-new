@@ -1,5 +1,7 @@
 #include "engine/core/app.hpp"
 
+#include "engine/core/log.hpp"
+
 namespace engine {
 
 int App::run() {
@@ -10,6 +12,7 @@ int App::run() {
             break;
         }
     }
+    log::flush();
     return 0;
 }
 
