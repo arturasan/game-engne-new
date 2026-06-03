@@ -2,16 +2,18 @@
 
 **This is the primary (only) supported platform through M4.** See `docs/adr/0002-fedora-primary-platform.md`.
 
-Target: Fedora 40+. Tested on Fedora 40 and 41.
+Target: Fedora 40+ host with a Fedora Rawhide toolbox for the GCC 16 / Clang 20
+toolchain until those compiler versions ship in a stable Fedora release.
 
 ## Quick path — toolbox with GCC 16
 
-If your host Fedora has GCC 15 (Fedora 40) and you want GCC 16 without disturbing the host:
+If your host Fedora has an older compiler and you want GCC 16 without disturbing
+the host:
 
 ```sh
 # One-time
 sudo dnf install -y toolbox
-toolbox create --image registry.fedoraproject.org/fedora:41 engine
+toolbox create --image registry.fedoraproject.org/fedora:rawhide engine
 toolbox enter engine
 # inside the toolbox, install GCC 16 + everything else (see "Required packages" below)
 ```
@@ -26,6 +28,7 @@ sudo dnf install -y \
     cmake ninja-build sccache \
     git pre-commit \
     python3 python3-pip \
+    autoconf autoconf-archive automake libtool perl-core \
     libX11-devel libXcursor-devel libXrandr-devel libXi-devel \
     libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
     mesa-vulkan-drivers vulkan-loader-devel vulkan-tools \
@@ -70,7 +73,7 @@ Expected: tests pass, `hello_window` prints `frame 0` through `frame 4`.
 The fast inner loop:
 
 ```sh
-cmake --workflow=check                   # configure + build + [fast] tests, ~10s incremental
+cmake --workflow --preset check          # configure + build + [fast] tests, ~10s incremental
 ```
 
 ## Headless rendering (CI parity)
@@ -92,4 +95,4 @@ vulkaninfo --summary | head -20          # should show llvmpipe device
 - **vcpkg first-build is slow:** confirm `sccache` is on `PATH` and `CMAKE_CXX_COMPILER_LAUNCHER=sccache` is set by the preset. Cold first configure (SDL3 + SDL3 GPU + spdlog + glm + miniaudio) ~3–6 min; subsequent rebuilds ~30s cached.
 - **`mold: undefined reference`:** confirm `CMAKE_LINKER_TYPE=MOLD` is the preset's value (it is). If your distro's `mold` is older than 2.30, install from Mold's release page.
 - **Permission denied writing to `~/vcpkg`:** clone to your home dir, not `/opt` or `/usr/local`.
-- **GitHub Actions container fails on dnf install:** check the CI file — it pins `fedora:40`. Update both the workflow and this doc together if you bump.
+- **GitHub Actions container fails on dnf install:** check the CI file — it pins `fedora:rawhide`. Update both the workflow and this doc together if you bump.
