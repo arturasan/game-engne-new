@@ -3,8 +3,10 @@ find_package(doctest CONFIG REQUIRED)
 add_executable(engine_tests
     unit/test_app.cpp
     unit/test_ecs.cpp
+    unit/test_events.cpp
     unit/test_log.cpp
     unit/test_platform.cpp
+    unit/test_resources.cpp
     unit/test_result.cpp
 )
 
