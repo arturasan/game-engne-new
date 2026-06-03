@@ -52,7 +52,7 @@ jobs:
         run: cmake --build --preset ${{ matrix.preset }}
 
       - name: test
-        run: ctest --preset ${{ matrix.preset }} --output-on-failure --output-junit build/${{ matrix.preset }}/junit.xml
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure --output-junit junit.xml
 
       - name: upload test report
         if: always()
