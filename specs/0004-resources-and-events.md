@@ -1,7 +1,7 @@
 # 0004 — Resources and events
 
 - Owner: TBD
-- Status: draft
+- Status: in-review
 - Tracking issue: TBD
 
 ## Scope
@@ -10,14 +10,14 @@ Add **resources** (singleton state) and **events** (per-frame typed message chan
 
 ## Acceptance criteria
 
-- [ ] `World::insert_resource<T>(T)`, `World::resource<T>() -> T&`, `World::try_resource<T>() -> T*`, `World::remove_resource<T>()`.
-- [ ] Inserting a resource twice replaces. Removing a missing resource is a no-op (debug-asserts).
-- [ ] `Events<T>` resource with `send(T)`, `read() -> std::span<const T>`. Double-buffered: events sent in frame N are readable in frame N and N+1, then dropped.
-- [ ] `EventReader<T>` system param tracks per-reader cursor so each reader sees each event exactly once.
-- [ ] `App::add_event<T>()` inserts `Events<T>` and registers the per-frame swap system in `First`.
-- [ ] `Schedule` accepts systems that take `Res<T>`, `ResMut<T>`, `EventReader<T>`, `EventWriter<T>` as parameters (extending the M0 stub).
-- [ ] Conflict detection: two systems with `ResMut<T>` cannot run in parallel (data for spec 0006 of M2; the access metadata must already be present in M1).
-- [ ] Unit tests in `tests/unit/test_resources.cpp` and `tests/unit/test_events.cpp`: insert/get, replace, double-buffer drop, reader cursor, multiple readers. Tagged `[fast]`.
+- [x] `World::insert_resource<T>(T)`, `World::resource<T>() -> T&`, `World::try_resource<T>() -> T*`, `World::remove_resource<T>()`.
+- [x] Inserting a resource twice replaces. Removing a missing resource is a no-op (debug-asserts).
+- [x] `Events<T>` resource with `send(T)`, `read() -> std::span<const T>`. Double-buffered: events sent in frame N are readable in frame N and N+1, then dropped.
+- [x] `EventReader<T>` system param tracks per-reader cursor so each reader sees each event exactly once.
+- [x] `App::add_event<T>()` inserts `Events<T>` and registers the per-frame swap system in `First`.
+- [x] `Schedule` accepts systems that take `Res<T>`, `ResMut<T>`, `EventReader<T>`, `EventWriter<T>` as parameters (extending the M0 stub).
+- [x] Conflict detection: two systems with `ResMut<T>` cannot run in parallel (data for spec 0006 of M2; the access metadata must already be present in M1).
+- [x] Unit tests in `tests/unit/test_resources.cpp` and `tests/unit/test_events.cpp`: insert/get, replace, double-buffer drop, reader cursor, multiple readers. Tagged `[fast]`.
 
 ## Out of scope
 
@@ -36,3 +36,9 @@ Add **resources** (singleton state) and **events** (per-frame typed message chan
 - Events: ring of two `std::vector<T>` per channel. Swap on `First`.
 - System param machinery: extend the M0 hand-written `system_traits<F>`. Reflection isn't here yet; expect some boilerplate per param type.
 - Read `docs/architecture/02-ecs.md` for storage conventions.
+
+## Implementation notes
+
+- Resource storage uses `ResourceId`, a process-local integer id allocated with the same monotonic pattern as `ComponentId`, but with a separate counter and map because resources do not participate in archetype signatures.
+- `App::first()` is the early schedule phase for M1. `App::add_event<T>()` inserts `Events<T>` and registers event maintenance there before the regular update schedule runs each frame.
+- `Events<T>::read()` returns a contiguous span backed by the channel's readable buffer. Internally the channel retains current and previous event records so `EventReader<T>` can keep an independent per-system cursor.

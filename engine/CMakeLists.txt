@@ -38,6 +38,7 @@ target_sources(engine
         core/result.hpp
         core/schedule.hpp
         ecs/entity.hpp
+        ecs/events.hpp
         ecs/world.hpp
         ecs/detail/archetype.hpp
         ecs/detail/component_id.hpp

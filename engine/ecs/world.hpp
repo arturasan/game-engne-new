@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -199,6 +200,50 @@ public:
         return get<T>(entity) != nullptr;
     }
 
+    template <typename T> std::remove_cvref_t<T>& insert_resource(T&& resource) {
+        using Raw = std::remove_cvref_t<T>;
+        const ResourceId id = resource_id_for<Raw>();
+        auto boxed = std::make_unique<ResourceBox<Raw>>(std::forward<T>(resource));
+        auto* raw = &boxed->value;
+        resources_.insert_or_assign(id, std::move(boxed));
+        return *raw;
+    }
+
+    template <typename T> [[nodiscard]] std::remove_cvref_t<T>& resource() {
+        auto* value = try_resource<T>();
+        assert(value != nullptr);
+        return *value;
+    }
+
+    template <typename T> [[nodiscard]] const std::remove_cvref_t<T>& resource() const {
+        const auto* value = try_resource<T>();
+        assert(value != nullptr);
+        return *value;
+    }
+
+    template <typename T> [[nodiscard]] std::remove_cvref_t<T>* try_resource() {
+        using Raw = std::remove_cvref_t<T>;
+        const auto it = resources_.find(resource_id_for<Raw>());
+        if (it == resources_.end()) {
+            return nullptr;
+        }
+        return &static_cast<ResourceBox<Raw>*>(it->second.get())->value;
+    }
+
+    template <typename T> [[nodiscard]] const std::remove_cvref_t<T>* try_resource() const {
+        using Raw = std::remove_cvref_t<T>;
+        const auto it = resources_.find(resource_id_for<Raw>());
+        if (it == resources_.end()) {
+            return nullptr;
+        }
+        return &static_cast<const ResourceBox<Raw>*>(it->second.get())->value;
+    }
+
+    template <typename T> void remove_resource() {
+        using Raw = std::remove_cvref_t<T>;
+        static_cast<void>(resources_.erase(resource_id_for<Raw>()));
+    }
+
     template <typename... Cs, typename Fn> void for_each(Fn&& fn) {
         static_assert(
             detail::unique_component_types<Cs...>,
@@ -248,6 +293,17 @@ private:
         std::uint32_t generation = 0;
         std::uint32_t archetype = detail::invalid_archetype;
         std::uint32_t row = detail::invalid_row;
+    };
+
+    struct ResourceBoxBase {
+        virtual ~ResourceBoxBase() = default;
+    };
+
+    template <typename T> struct ResourceBox final : ResourceBoxBase {
+        template <typename Value>
+        explicit ResourceBox(Value&& resource) : value(std::forward<Value>(resource)) {}
+
+        T value;
     };
 
     [[nodiscard]] Slot* live_slot(Entity entity) {
@@ -353,6 +409,9 @@ private:
     std::vector<std::unique_ptr<detail::Archetype>> archetypes_;
     std::unordered_map<std::vector<ComponentId>, std::uint32_t, detail::SignatureHash>
         archetype_lookup_;
+    // Resources use the same process-local integer id shape as component signatures, but stay in
+    // a separate map because singleton lifetime is unrelated to archetype storage.
+    std::unordered_map<ResourceId, std::unique_ptr<ResourceBoxBase>> resources_;
     std::uint32_t empty_archetype_ = detail::invalid_archetype;
 };
 

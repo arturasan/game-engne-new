@@ -11,6 +11,7 @@
 namespace engine {
 
 using ComponentId = std::uint32_t;
+using ResourceId = std::uint32_t;
 
 namespace detail {
 
@@ -67,6 +68,16 @@ inline ComponentId next_component_id() {
     return next.fetch_add(1, std::memory_order_relaxed);
 }
 
+inline ResourceId next_resource_id() {
+    static std::atomic<ResourceId> next = 0;
+    return next.fetch_add(1, std::memory_order_relaxed);
+}
+
+template <typename T> ResourceId normalized_resource_id_for() {
+    static const ResourceId id = next_resource_id();
+    return id;
+}
+
 inline bool register_component_info(const ComponentInfo& info) {
     auto& registry = component_registry();
     if (info.id >= registry.size()) {
@@ -106,6 +117,11 @@ inline constexpr bool unique_component_types<T, Rest...> =
 
 template <typename T> ComponentId component_id_for() {
     return detail::component_info_for<T>().id;
+}
+
+template <typename T> ResourceId resource_id_for() {
+    using Raw = std::remove_cvref_t<T>;
+    return detail::normalized_resource_id_for<Raw>();
 }
 
 } // namespace engine
