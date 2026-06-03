@@ -1,0 +1,15 @@
+find_package(doctest CONFIG REQUIRED)
+
+add_executable(engine_tests
+    unit/test_app.cpp
+)
+
+target_link_libraries(engine_tests PRIVATE engine::engine doctest::doctest)
+
+include(${doctest_DIR}/doctest.cmake OPTIONAL RESULT_VARIABLE _doctest_module_found)
+if(_doctest_module_found)
+    doctest_discover_tests(engine_tests ADD_LABELS 1)
+else()
+    add_test(NAME engine_tests COMMAND engine_tests)
+    set_tests_properties(engine_tests PROPERTIES LABELS "fast")
+endif()

@@ -1,0 +1,35 @@
+name: agent task
+description: A scoped change for an AI coding agent to implement
+title: "feat: "
+body:
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: One-paragraph summary of what should change.
+    validations: { required: true }
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Bullet list of testable conditions that must hold when the PR is done.
+    validations: { required: true }
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: Things the agent must NOT do as part of this task.
+    validations: { required: true }
+  - type: textarea
+    id: do_not_touch
+    attributes:
+      label: Files not to touch
+      description: Paths the agent must leave alone (e.g., other modules, generated files).
+    validations: { required: true }
+  - type: input
+    id: spec
+    attributes:
+      label: Spec file
+      description: Path to the spec under specs/ (create one if it doesn't exist).
+      placeholder: specs/0002-some-feature.md
+    validations: { required: true }

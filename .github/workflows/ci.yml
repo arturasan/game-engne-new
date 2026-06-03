@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Through M4 we target Fedora only. See docs/adr/0002-fedora-primary-platform.md.
+# Windows and macOS jobs return in M5.
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    container:
+      image: fedora:40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-clang-asan
+            preset: linux-clang-asan
+          - name: linux-gcc-rel
+            preset: linux-gcc-rel
+
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+
+      - name: install toolchain
+        run: |
+          dnf install -y \
+            gcc gcc-c++ clang clang-tools-extra lld mold \
+            cmake ninja-build sccache \
+            git python3 python3-pip pre-commit \
+            libX11-devel libXcursor-devel libXrandr-devel libXi-devel \
+            libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
+            mesa-vulkan-drivers vulkan-loader-devel \
+            alsa-lib-devel pulseaudio-libs-devel \
+            pkgconf-pkg-config tar curl
+
+      - name: setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: setup vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: test
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure --output-junit build/${{ matrix.preset }}/junit.xml
+
+      - name: upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/junit.xml

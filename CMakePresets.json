@@ -1,0 +1,106 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 30, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "linux-clang-asan",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_LINKER_TYPE": "MOLD",
+        "CMAKE_CXX_STANDARD": "26",
+        "ENGINE_ENABLE_ASAN": "ON",
+        "ENGINE_ENABLE_UBSAN": "ON"
+      },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
+    },
+    {
+      "name": "linux-gcc-rel",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_LINKER_TYPE": "MOLD",
+        "CMAKE_CXX_STANDARD": "26"
+      },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
+    },
+    {
+      "name": "win-msvc-dbg",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_LINKER_TYPE": "LLD"
+      },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "win-mingw-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc.exe",
+        "CMAKE_CXX_COMPILER": "g++.exe",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+        "VCPKG_HOST_TRIPLET":   "x64-mingw-dynamic"
+      },
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "win-mingw-rel",
+      "inherits": "win-mingw-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "win-mingw-dbg",
+      "inherits": "win-mingw-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENGINE_ENABLE_UBSAN": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "linux-clang-asan", "configurePreset": "linux-clang-asan", "configuration": "Debug" },
+    { "name": "linux-gcc-rel",    "configurePreset": "linux-gcc-rel",    "configuration": "Release" },
+    { "name": "win-msvc-dbg",     "configurePreset": "win-msvc-dbg",     "configuration": "Debug" },
+    { "name": "win-mingw-rel",    "configurePreset": "win-mingw-rel" },
+    { "name": "win-mingw-dbg",    "configurePreset": "win-mingw-dbg" }
+  ],
+  "testPresets": [
+    { "name": "linux-clang-asan", "configurePreset": "linux-clang-asan", "configuration": "Debug",
+      "filter": { "include": { "label": "fast" } },
+      "output": { "outputOnFailure": true } },
+    { "name": "win-msvc-dbg",     "configurePreset": "win-msvc-dbg",     "configuration": "Debug",
+      "filter": { "include": { "label": "fast" } },
+      "output": { "outputOnFailure": true } },
+    { "name": "win-mingw-dbg",    "configurePreset": "win-mingw-dbg",
+      "filter": { "include": { "label": "fast" } },
+      "output": { "outputOnFailure": true } }
+  ],
+  "workflowPresets": [
+    {
+      "name": "check",
+      "steps": [
+        { "type": "configure", "name": "linux-clang-asan" },
+        { "type": "build",     "name": "linux-clang-asan" },
+        { "type": "test",      "name": "linux-clang-asan" }
+      ]
+    }
+  ]
+}
