@@ -40,7 +40,7 @@ Add 3D rendering: `plugins/pbr/` renders triangle meshes with a physically-based
 ## Notes for the implementing agent
 
 - File an ADR for mesh data layout (interleaved vs SoA) before coding. The choice has perf and ergonomic tradeoffs.
-- The PBR shader (`plugins/pbr/shaders/pbr.wgsl`) is non-trivial. Reference Bevy's `pbr.wgsl` and the glTF 2.0 BRDF spec; do not copy verbatim. Document derivations.
+- The PBR shader is shipped as SPIR-V bytecode at `plugins/pbr/shaders/pbr.spv`. Reference the glTF 2.0 BRDF spec and other permissively licensed material-system notes for the math; do not copy shader code verbatim. If authors prefer GLSL or HLSL source, compile it to SPIR-V at build time.
 - glTF accessor → vertex buffer conversion: keep this in `plugins/pbr/detail/gltf_loader.cpp`. Use `tinygltf` headers there; never in a public header.
 - HDR pipeline: linear-RGB intermediate render target, tonemap to sRGB swapchain in a final pass. Tag this as a TODO if not yet wired in the renderer — minimum viable is direct sRGB output.
 - The damaged helmet glTF is the standard test asset; download it via CMake `FetchContent` into `examples/pbr_demo/assets/` (gitignored).

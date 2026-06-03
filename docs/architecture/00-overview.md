@@ -2,12 +2,12 @@
 
 ## Design pillars
 
-1. **Bevy-inspired.** ECS-first, plugin composition, builder-style App. We are not Bevy; we deliberately re-implement in C++23/26 to learn and to own our destiny.
+1. **Bevy-inspired.** ECS-first, plugin composition, builder-style App. We are not Bevy; we deliberately re-implement in C++26 during the Fedora-only era to learn and to own our destiny.
 2. **No third-party type ever leaks into a public engine header.** Every dependency lives behind an interface in `engine/`. Backends are implemented in `*_backend.cpp` files that pull in the dep. Grep test: `grep -rE 'SDL_|SDL_GPU|glm::|spdlog' engine/**/*.hpp` must return zero hits.
 3. **Plugin architecture.** Engine subsystems and game features alike are `Plugin`s. `DefaultPlugins` is just `add_plugin(WindowPlugin{}).add_plugin(InputPlugin{})...`.
 4. **2D and 3D share everything possible.** `Transform`, `Camera`, `Material`, `Mesh`, `Visibility`, asset handles. They differ only at the render-phase level.
 5. **Determinism is a feature.** Fixed-timestep sim, seeded RNG, frame-hash replay. Pays off in tests, networking, debugging.
-6. **Cheap, parallelizable iteration.** Every change costs <10s to verify locally via `cmake --workflow=check`.
+6. **Cheap, parallelizable iteration.** Every change costs <10s to verify locally via `cmake --workflow --preset check`.
 
 ## Layer diagram
 

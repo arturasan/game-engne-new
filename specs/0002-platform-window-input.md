@@ -11,8 +11,8 @@ Wrap SDL3 behind `engine::Window` and `engine::Input` in `engine/platform/`. Pub
 ## Acceptance criteria
 
 - [ ] `engine::WindowConfig` POD: `title`, `width`, `height`, `resizable`, `fullscreen`, `vsync`.
-- [ ] `engine::Window` exposes: `size()`, `close()`, `should_close()`, `swap()` (no-op in M1, hook for renderer in 0005).
-- [ ] `engine::Input` resource exposes: `key_pressed(Key)`, `key_just_pressed(Key)`, `key_just_released(Key)`, mouse button + position equivalents.
+- [ ] `engine::Window` exposes: `size() -> engine::Extent2d`, `close()`, `should_close()`, `swap()` (no-op in M1, hook for renderer in 0005).
+- [ ] `engine::Input` resource exposes: `key_pressed(Key)`, `key_just_pressed(Key)`, `key_just_released(Key)`, `mouse_pressed(MouseButton)`, `mouse_just_pressed(MouseButton)`, `mouse_just_released(MouseButton)`, `mouse_position() -> engine::vec2`, `mouse_delta() -> engine::vec2`, and `wheel_delta() -> engine::vec2`.
 - [ ] Typed event channels: `KeyEvent`, `MouseButtonEvent`, `MouseMotionEvent`, `WindowResizeEvent`, `WindowCloseRequested`.
 - [ ] `engine::Key` and `engine::MouseButton` enums cover the full SDL3 surface but are defined in `engine/platform/input.hpp` without including any SDL header.
 - [ ] `PlatformPlugin::build(App&)` inserts the `Window` + `Input` resources and registers a `First` schedule system that pumps events.

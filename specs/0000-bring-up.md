@@ -1,34 +1,34 @@
 # 0000 — Phase-0 bring-up on Fedora
 
 - Owner: TBD (first agent on the new workstation)
-- Status: blocking (no other spec can be worked until this is done)
+- Status: merged
 - Tracking issue: TBD
 
 ## Scope
 
-The Phase-0 scaffold (`AGENTS.md`, `CMakeLists.txt`, `CMakePresets.json`, `vcpkg.json`, `engine/core/*`, `tests/unit/test_app.cpp`, `examples/hello_window/`, CI workflow, pre-commit config) was authored without ever being compiled. This spec is the first end-to-end build on a real Fedora 40+ workstation with GCC 16 / Clang 20. Fix whatever turns out to be broken.
+The Phase-0 scaffold (`AGENTS.md`, `CMakeLists.txt`, `CMakePresets.json`, `vcpkg.json`, `engine/core/*`, `tests/unit/test_app.cpp`, `examples/hello_window/`, CI workflow, pre-commit config) was authored without ever being compiled. This historical spec tracked the first end-to-end build on a real Fedora 40+ workstation with GCC 16 / Clang 20.
 
-This is **not** feature work. The goal is: scaffold builds, tests pass, CI is green. Nothing more.
+This was **not** feature work. The goal was: scaffold builds, tests pass, CI is green. Nothing more.
 
 ## Acceptance criteria
 
-- [ ] `docs/setup/fedora.md` followed end-to-end on a fresh clone produces a working environment.
-- [ ] `cmake --preset linux-clang-asan` configures with zero warnings (or with warnings tracked in this spec).
-- [ ] `cmake --build --preset linux-clang-asan` builds cleanly.
-- [ ] `cmake --preset linux-gcc-rel` configures + builds cleanly.
-- [ ] `ctest --preset linux-clang-asan` passes (all 3 `test_app.cpp` cases green).
-- [ ] `cmake --workflow --preset check` finishes in under 60s cold, under 10s incremental.
-- [ ] `./build/linux-clang-asan/Debug/examples/hello_window/hello_window` prints `frame 0` through `frame 4` and exits 0.
-- [ ] `pre-commit run --all-files` passes on a fresh clone (after `pre-commit install`).
-- [ ] GitHub Actions CI green on a no-op PR for both `linux-clang-asan` and `linux-gcc-rel` jobs.
-- [ ] `grep -rE 'SDL_|SDL_GPU|glm::|spdlog' engine/**/*.hpp` returns zero hits (the abstraction-rule canary).
+- [x] `docs/setup/fedora.md` followed end-to-end on a fresh clone produces a working environment.
+- [x] `cmake --preset linux-clang-asan` configures with zero warnings (or with warnings tracked in this spec).
+- [x] `cmake --build --preset linux-clang-asan` builds cleanly.
+- [x] `cmake --preset linux-gcc-rel` configures + builds cleanly.
+- [x] `ctest --preset linux-clang-asan` passes (all 3 `test_app.cpp` cases green).
+- [x] `cmake --workflow --preset check` finishes in under 60s cold, under 10s incremental.
+- [x] `./build/linux-clang-asan/Debug/examples/hello_window/hello_window` prints `frame 0` through `frame 4` and exits 0.
+- [x] `pre-commit run --all-files` passes on a fresh clone (after `pre-commit install`).
+- [x] GitHub Actions CI green on a no-op PR for both `linux-clang-asan` and `linux-gcc-rel` jobs.
+- [x] `grep -rE 'SDL_|SDL_GPU|glm::|spdlog' engine/**/*.hpp` returns zero hits (the abstraction-rule canary).
 
 ## Allowed changes
 
 - Fix CMake typos, missing `target_link_libraries`, missing includes.
 - Fix `vcpkg.json` version pins that vcpkg refuses.
 - Fix preset names / paths that don't actually exist.
-- Add the `cmake --workflow=check` workflow preset if missing or broken.
+- Add the `cmake --workflow --preset check` workflow preset if missing or broken.
 - Fix CI YAML errors (dnf package names, action versions, container image tags).
 - Update `.pre-commit-config.yaml` hook versions to ones that actually install.
 - Add or fix `.gitignore` entries that prevent a clean tree post-build.

@@ -21,12 +21,12 @@ The generation lets the system safely detect "this asset was unloaded and anothe
 
 ## Two ways to load
 
-**Asynchronous (the default):**
+**Default load API (M1 sync shim, later async):**
 
 ```cpp
 auto handle = world.resource<AssetServer>().load<Image>("textures/player.png");
-// returns immediately. handle is valid; the underlying Image is loaded
-// on a worker thread and populated when ready.
+// M1: blocks like load_sync, records AssetState, and returns the handle.
+// Later: may return immediately once scheduler/thread-pool handoff exists.
 ```
 
 **Synchronous (tests, examples, hot paths where you must block):**
@@ -40,7 +40,7 @@ if (!result) {
 auto handle = *result;
 ```
 
-`load_sync` returns a `Result<Handle<T>>`. `load` always returns a `Handle<T>` — query its state via the asset server.
+`load_sync` returns a `Result<Handle<T>>`. `load` always returns a `Handle<T>` and records state via the asset server. In M1 it is not truly asynchronous.
 
 ## Asset state
 
@@ -53,7 +53,7 @@ case AssetState::Failed:  ...
 }
 ```
 
-A typical pattern: spawn an entity with a sprite handle immediately, and let the sprite renderer draw a **placeholder** (pink checkerboard) until the asset finishes loading. No special-casing required at the call site.
+A typical future pattern: spawn an entity with a sprite handle immediately, and let the sprite renderer draw a **placeholder** (pink checkerboard) until the asset finishes loading. In M1 the same state API exists, but loading completes during the blocking call.
 
 ## Resolving handles to data
 
@@ -88,7 +88,7 @@ struct ImageLoader {
 app.add_asset_loader<Image>(ImageLoader{});
 ```
 
-Loaders run on `TaskPool::io`. The result is shipped back to the main thread and inserted into `Assets<T>` at a safe point.
+M1 loaders run synchronously on the calling thread. Later async loaders will run on the scheduler/thread-pool infrastructure and ship results back to the main thread at a deterministic safe point.
 
 ## Sub-assets
 
@@ -108,7 +108,7 @@ The caller of `load<Scene>("foo.gltf")` gets the root handle; named sub-assets a
 | `Handle<T>`          | small POD, copy anywhere          |
 | `Assets<T>`          | resource on `World`               |
 | `AssetServer`        | resource on `World`               |
-| Loader threads       | `TaskPool::io`                    |
+| Loader execution     | calling thread in M1; scheduler/thread pool later |
 | Placeholder data     | hard-coded fallback inside `Assets<T>` (pink checker / silent audio) |
 
 ## Hot reload (M3)
@@ -117,4 +117,4 @@ A file watcher on the asset root will turn file-modified events into `AssetEvent
 
 ---
 
-**Bevy mapping:** `Handle<T>`, `Assets<T>`, `AssetServer`, `AssetLoader<T>` ↔ identically named Bevy types. The async-by-default + placeholder pattern is the same. Bevy's `AssetEvent` is also our M3 plan.
+**Bevy mapping:** `Handle<T>`, `Assets<T>`, `AssetServer`, `AssetLoader<T>` ↔ identically named Bevy types. The placeholder/state pattern is the same; true async loading waits until this engine has scheduler/thread-pool support. Bevy's `AssetEvent` is also our M3 plan.

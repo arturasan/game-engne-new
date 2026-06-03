@@ -36,7 +36,7 @@ Implement the first cut of the ECS storage layer in `engine/ecs/`. Components ar
 
 ## Notes for the implementing agent
 
-- Read `docs/adr/0001-cpp23-baseline.md`. Use C++23 features (`std::expected`, deducing-this) freely; do not reach for C++26.
+- Read `docs/adr/0002-fedora-primary-platform.md` for the current compiler policy. The Fedora-only era uses a C++26 baseline, but only use features supported by the active Fedora toolchains. Keep the ECS code simple; do not use C++26 features just to show off. Avoid speculative reflection, contracts, or pattern matching unless an ADR explicitly allows them.
 - Component identification: use `std::type_index` or a custom `component_id_for<T>()` returning a process-stable integer. Pick one and document the choice in a follow-up ADR.
 - Bevy's `bevy_ecs::archetype` is the reference shape — translate, don't copy.
 - Do not introduce EnTT or flecs as a dependency. We are building this on purpose.

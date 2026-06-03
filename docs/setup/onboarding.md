@@ -11,7 +11,7 @@ Pick the path for your OS:
 
 If you're on Windows or macOS and need to start work today, either use Fedora in a VM / WSL2 toolbox, or pick up a doc-only spec until M5. See `docs/adr/0002-fedora-primary-platform.md` for the rationale.
 
-Don't move past this until `cmake --workflow=check` passes green. Every subsequent step assumes a working build.
+Don't move past this until `cmake --workflow --preset check` passes green. Every subsequent step assumes a working build.
 
 ## 2. Read the canonical brief (5 min)
 
@@ -49,7 +49,7 @@ Then skim the per-subsystem docs as relevant to what you're about to touch:
 - **Files not to touch** — files reserved for other specs
 - **Notes for the implementing agent** — hints, reading list
 
-The first available spec by number is your job unless told otherwise. Currently `specs/0000-bring-up.md` is the starting point.
+The first available spec by number is your job unless told otherwise. Phase-0 bring-up has merged, so the M1 starting point is `specs/0001-ecs-archetype-storage.md`.
 
 ## 6. Workflow per spec (the loop)
 
@@ -58,7 +58,7 @@ The first available spec by number is your job unless told otherwise. Currently 
 2. read any docs/architecture/ chapter it references
 3. read existing related code (grep first — there is more reuse than you think)
 4. write the public header(s) and tests FIRST, then the implementation
-5. run `cmake --workflow=check` after each meaningful change
+5. run `cmake --workflow --preset check` after each meaningful change
 6. when all acceptance-criteria checkboxes pass, open a PR using the agent-task template
 ```
 
@@ -77,7 +77,7 @@ In order:
 ## 8. What "done" means for a PR
 
 - All acceptance criteria checked
-- `cmake --workflow=check` green locally
+- `cmake --workflow --preset check` green locally
 - All CI jobs green (the matrix is small on purpose; if it's red, fix it before review)
 - No public header in `engine/` references a third-party type
 - Conventional commit message (`feat:`, `fix:`, etc.)

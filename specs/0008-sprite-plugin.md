@@ -16,7 +16,7 @@ First end-to-end visible feature: `plugins/sprite/` draws textured quads on scre
   - Registers `Sprite` component.
   - Adds `extract_sprites_system` in the engine-internal `Extract` schedule.
   - Adds `Phase2dSprite` to the render phase set.
-  - Loads + registers the built-in WGSL sprite shader.
+  - Loads + registers the built-in SPIR-V sprite shader.
 - [ ] `RenderWorld` (introduced minimally here) has its own `World` and is reset/repopulated each frame by extract systems.
 - [ ] Batching: contiguous sprites with the same texture are drawn in one draw call (instanced quad).
 - [ ] Sort key: `(z_layer, y_position)` — back-to-front for transparency.
@@ -40,7 +40,7 @@ First end-to-end visible feature: `plugins/sprite/` draws textured quads on scre
 ## Notes for the implementing agent
 
 - Read `docs/architecture/04-rendering.md` on extract + render world.
-- The built-in sprite shader lives in `plugins/sprite/shaders/sprite.wgsl`. Embed at compile time via a CMake `configure_file` that turns it into a `const char[]` in a `.cpp`.
+- The built-in sprite shader is shipped as SPIR-V bytecode at `plugins/sprite/shaders/sprite.spv`. If authors prefer GLSL or HLSL source, compile it to SPIR-V at build time; do not introduce a different M1 runtime shader format without an ADR.
 - Use instanced quads: one vertex buffer (4 verts), one instance buffer (per-sprite transform + UV + color), `draw_indexed_instanced`.
 - The RenderWorld is a `World` instance owned by `Renderer`. Don't expose it as a public type; expose only `RenderWorld&` to extract systems via system param.
 - Screenshot determinism: pin to SwiftShader in CI. See `docs/architecture/07-testing.md`.

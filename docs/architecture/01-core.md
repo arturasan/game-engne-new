@@ -136,9 +136,9 @@ struct DefaultPlugins {
 
 `add_system` is **lazy**: it records the system but does not analyze access until `run()` first calls `prepare()`. This lets the user add systems and resources in any order.
 
-## System parameters (the C++23 path)
+## System parameters (pre-reflection path)
 
-Until C++26 reflection ships, we hand-write the parameter introspection. A `SystemContext` carries opaque handles; concrete system functions pull resources/queries from it:
+Until reflection is both available in the active Fedora toolchains and approved by an ADR, we hand-write the parameter introspection. A `SystemContext` carries opaque handles; concrete system functions pull resources/queries from it:
 
 ```cpp
 app.add_system([](World& w, SystemContext& ctx) {
@@ -159,7 +159,7 @@ app.add_system([](World& w, SystemContext& ctx) {
 | `Plugin` is a concept, not a base class | Zero v-table cost, plain values, composable as tuples | Inheritance with `virtual build()` |
 | Schedules keyed by **tag type** | Compile-time-checked, zero string churn, IDE-friendly | String labels (Bevy's old approach) |
 | `App` owns both main and render worlds | Frame loop sequencing is centralized | Two `App`s as in Bevy 0.10+ (more flexible but more setup overhead for a small team) |
-| Hand-written `SystemContext` until reflection | Works today; one swap-out file when reflection ships | Wait for reflection (blocks M1) |
+| Hand-written `SystemContext` until approved reflection support | Works today; one swap-out file if reflection becomes policy | Wait for reflection (blocks M1) |
 | `std::move_only_function` for system storage | Allows lambdas with move-only captures; no SBO surprises | `std::function` (copy-required) |
 
 ## What is **not** in core

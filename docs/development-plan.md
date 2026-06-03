@@ -11,11 +11,11 @@ If you are an agent picking up work, read this **after** `AGENTS.md` and **befor
 | Phase | Status | Artifact |
 |---|---|---|
 | M0  — Scaffolding | done (on disk, never compiled) | 27 files, 12 specs, full doc tree |
-| M0.5 — Bring-up on Fedora | **next** | `specs/0000-bring-up.md` |
-| M1  — Playable engine core | blocked on M0.5 | 12 specs ready |
+| M0.5 — Bring-up on Fedora | done (merged) | `specs/0000-bring-up.md` |
+| M1  — Playable engine core | **next** | 12 specs ready; start with `specs/0001-ecs-archetype-storage.md` |
 | M2–M6 | future | roadmap only |
 
-The single largest risk is **M0.5**. Nothing else can start until a `cmake --workflow=check` returns green on a real Fedora workstation.
+The Phase-0 bring-up risk is retired: the scaffold now has a working Fedora loop via `cmake --workflow --preset check`. Future agents should keep that command green before starting feature work.
 
 ---
 
@@ -30,7 +30,7 @@ The single largest risk is **M0.5**. Nothing else can start until a `cmake --wor
 
 ---
 
-## M0.5 — Bring-up (~0.5 wk)
+## M0.5 — Bring-up (~0.5 wk, done)
 
 **Goal:** prove the scaffold compiles, tests pass, CI is green on a fresh Fedora clone.
 
@@ -44,10 +44,10 @@ The single largest risk is **M0.5**. Nothing else can start until a `cmake --wor
 | 1 | First `cmake --preset linux-clang-asan` — record everything that breaks. |
 | 2 | Fix CMake / preset / vcpkg.json issues. Get `linux-clang-asan` building. |
 | 2 | Get `linux-gcc-rel` building. |
-| 3 | Get `cmake --workflow=check` working end-to-end. |
+| 3 | Get `cmake --workflow --preset check` working end-to-end. |
 | 3 | First PR. Get CI green. |
 
-**Exit criteria:** every checkbox in `specs/0000-bring-up.md` ticked.
+**Exit criteria:** every checkbox in `specs/0000-bring-up.md` ticked. This phase is merged; do not reopen it for M1 feature work.
 
 ---
 
@@ -108,7 +108,7 @@ The two tracks join at 0008 (sprite) which is the first cross-track integration 
 3. Read the architecture chapter(s) it references.
 4. grep the engine for existing related code — there is more reuse than you think.
 5. Write public headers + tests FIRST. Implementation second.
-6. After every meaningful change: `cmake --workflow=check`.
+6. After every meaningful change: `cmake --workflow --preset check`.
 7. When all Acceptance Criteria checkboxes tick: open a PR.
 8. Address review. Merge. Update the spec file with a one-line note if reality deviated from plan.
 ```
@@ -143,19 +143,19 @@ ctest --preset linux-clang-asan
 
 ## M2 — Renderer maturity (~5 wk)
 
-Not specced in detail yet. Open the first spec (`0013-material-shader-api.md`) the moment M1 demo gate is passed. Suggested order:
+Not specced in detail yet. `0013` is reserved for `specs/0013-commands-deferred-mutation.md`; open the first renderer-maturity spec (`0014-material-shader-api.md`) the moment M1 demo gate is passed. Suggested order:
 
 ```
-0013 Material/shader API (the one approved abstraction leak)
-0014 Render graph
-0015 Multi-camera + viewports
-0016 Render layers
-0017 Post-process chain
-0018 Sprite atlas + tilemap
-0019 Skeletal animation
+0014 Material/shader API (the one approved abstraction leak)
+0015 Render graph
+0016 Multi-camera + viewports
+0017 Render layers
+0018 Post-process chain
+0019 Sprite atlas + tilemap
+0020 Skeletal animation
 ```
 
-Parallelism scheduler (planned spec: `0020-parallel-system-executor`) — touch in parallel with the renderer specs; it has no rendering dependency. Audio determinism (planned spec: `0021-audio-replay`) — open if the open question from `07-testing.md` becomes a real need.
+Parallelism scheduler (planned spec: `0021-parallel-system-executor`) — touch in parallel with the renderer specs; it has no rendering dependency. Audio determinism (planned spec: `0022-audio-replay`) — open if the open question from `07-testing.md` becomes a real need.
 
 ---
 
