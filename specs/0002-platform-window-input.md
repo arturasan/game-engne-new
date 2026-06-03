@@ -1,7 +1,7 @@
 # 0002 — Platform: Window + Input (SDL3 hidden)
 
 - Owner: TBD
-- Status: draft
+- Status: in-review
 - Tracking issue: TBD
 
 ## Scope
@@ -10,16 +10,23 @@ Wrap SDL3 behind `engine::Window` and `engine::Input` in `engine/platform/`. Pub
 
 ## Acceptance criteria
 
-- [ ] `engine::WindowConfig` POD: `title`, `width`, `height`, `resizable`, `fullscreen`, `vsync`.
-- [ ] `engine::Window` exposes: `size() -> engine::Extent2d`, `close()`, `should_close()`, `swap()` (no-op in M1, hook for renderer in 0005).
-- [ ] `engine::Input` resource exposes: `key_pressed(Key)`, `key_just_pressed(Key)`, `key_just_released(Key)`, `mouse_pressed(MouseButton)`, `mouse_just_pressed(MouseButton)`, `mouse_just_released(MouseButton)`, `mouse_position() -> engine::vec2`, `mouse_delta() -> engine::vec2`, and `wheel_delta() -> engine::vec2`.
-- [ ] Typed event channels: `KeyEvent`, `MouseButtonEvent`, `MouseMotionEvent`, `WindowResizeEvent`, `WindowCloseRequested`.
-- [ ] `engine::Key` and `engine::MouseButton` enums cover the full SDL3 surface but are defined in `engine/platform/input.hpp` without including any SDL header.
-- [ ] `PlatformPlugin::build(App&)` inserts the `Window` + `Input` resources and registers a `First` schedule system that pumps events.
-- [ ] `ENGINE_HEADLESS=1` env var skips real window creation; events come from a programmable queue (foundation for replay).
-- [ ] Grep test: `grep -r 'SDL_\|SDL3' engine/platform/*.hpp` returns zero hits.
-- [ ] Unit tests in `tests/unit/test_platform.cpp`: enum round-trip, headless event injection drives `Input` state changes correctly. Tagged `[fast]`.
-- [ ] `examples/hello_window` updated to use `PlatformPlugin` and exit on `Escape`.
+- [x] `engine::WindowConfig` POD: `title`, `width`, `height`, `resizable`, `fullscreen`, `vsync`.
+- [x] `engine::Window` exposes: `size() -> engine::Extent2d`, `close()`, `should_close()`, `swap()` (no-op in M1, hook for renderer in 0005).
+- [x] `engine::Input` resource exposes: `key_pressed(Key)`, `key_just_pressed(Key)`, `key_just_released(Key)`, `mouse_pressed(MouseButton)`, `mouse_just_pressed(MouseButton)`, `mouse_just_released(MouseButton)`, `mouse_position() -> engine::vec2`, `mouse_delta() -> engine::vec2`, and `wheel_delta() -> engine::vec2`.
+- [x] Typed event channels: `KeyEvent`, `MouseButtonEvent`, `MouseMotionEvent`, `WindowResizeEvent`, `WindowCloseRequested`.
+- [x] `engine::Key` and `engine::MouseButton` enums cover the full SDL3 surface but are defined in `engine/platform/input.hpp` without including any SDL header.
+- [ ] `PlatformPlugin::build(App&)` inserts the `Window` + `Input` resources and registers a `First` schedule system that pumps events. Partially satisfied: `specs/0004-resources-and-events.md` is not implemented yet, so this PR uses a narrow `PlatformPlugin`-owned platform-state bridge keyed to `App` and registers the pump in the existing schedule instead of adding full resources/events or a `First` schedule.
+- [x] `ENGINE_HEADLESS=1` env var skips real window creation; events come from a programmable queue (foundation for replay).
+- [x] Grep test: `grep -r 'SDL_\|SDL3' engine/platform/*.hpp` returns zero hits.
+- [x] Unit tests in `tests/unit/test_platform.cpp`: enum round-trip, headless event injection drives `Input` state changes correctly. Tagged `[fast]`.
+- [x] `examples/hello_window` updated to use `PlatformPlugin` and exit on `Escape`.
+
+## Implementation notes
+
+- SDL3 is private to implementation/detail files. Public platform headers expose only `engine::` types and include no SDL headers, pointer types, enums, or constants.
+- `ENGINE_HEADLESS=1` selects the headless backend and drives input/window state through a programmable event queue for tests and future replay work.
+- `engine::Input` mutation is private gameplay-facing API surface; the platform event pump routes frame clearing and event-derived state updates through `engine::detail::InputAccess`.
+- Full `Window`/`Input` resource insertion, `Events<T>` channels, and `First` schedule integration are deferred to `specs/0004-resources-and-events.md`. This PR intentionally avoids implementing that broader framework.
 
 ## Out of scope
 

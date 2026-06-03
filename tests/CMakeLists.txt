@@ -4,10 +4,12 @@ add_executable(engine_tests
     unit/test_app.cpp
     unit/test_ecs.cpp
     unit/test_log.cpp
+    unit/test_platform.cpp
     unit/test_result.cpp
 )
 
 target_link_libraries(engine_tests PRIVATE engine::engine doctest::doctest)
+target_compile_definitions(engine_tests PRIVATE ENGINE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 include(${doctest_DIR}/doctest.cmake OPTIONAL RESULT_VARIABLE _doctest_module_found)
 if(_doctest_module_found)

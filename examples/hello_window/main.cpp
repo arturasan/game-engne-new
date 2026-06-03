@@ -1,18 +1,22 @@
-// hello_window — smallest runnable demo of the App loop.
-// A real engine::Window (SDL3-backed) is added in a later spec; this file
-// exists today to prove the App + Schedule + Plugin scaffolding builds and
-// runs as an executable on both Linux and Windows.
-
 #include <cstdio>
 
 #include "engine/core/app.hpp"
+#include "engine/platform/platform.hpp"
 
 namespace {
 
-struct LogFramePlugin {
+struct HelloWindowPlugin {
     void build(engine::App& app) const {
-        app.add_system("log_frame", [](engine::App& a) {
-            std::printf("frame %llu\n", static_cast<unsigned long long>(a.frame()));
+        app.add_system("hello_window", [](engine::App& a) {
+            const auto& window = engine::window(a);
+            const auto& input = engine::input(a);
+            const auto size = window.size();
+            std::printf("frame %llu %ux%u\n", static_cast<unsigned long long>(a.frame()),
+                        size.width, size.height);
+
+            if (input.key_just_pressed(engine::Key::Escape) || window.should_close()) {
+                a.request_exit();
+            }
         });
     }
 };
@@ -21,6 +25,7 @@ struct LogFramePlugin {
 
 int main() {
     engine::App app;
-    app.add_plugin(LogFramePlugin{}).set_max_frames(5);
+    app.add_plugin(engine::PlatformPlugin{.config = engine::WindowConfig{.title = "hello_window"}})
+        .add_plugin(HelloWindowPlugin{});
     return app.run();
 }
