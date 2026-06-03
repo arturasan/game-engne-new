@@ -8,17 +8,17 @@ Each milestone has a **demo gate** — a concrete runnable artifact that proves 
 
 ## M0 — Scaffolding *(done)*
 
-CMake + presets, vcpkg manifest, AGENTS.md + agent stubs, doctest harness, pre-commit, CI matrix skeleton, minimal `engine::App`. ADR 0001 (C++23 baseline, now superseded by ADR 0002, which raises the baseline to C++26 for the Fedora-only era). Spec 0000 (bring-up) is the next spec to execute.
+CMake + presets, vcpkg manifest, AGENTS.md + agent stubs, doctest harness, pre-commit, CI matrix skeleton, minimal `engine::App`. ADR 0001 (C++23 baseline, now superseded by ADR 0002, which raises the baseline to C++26 for the Fedora-only era). Spec 0000 (bring-up) has merged.
 
-**Demo gate:** `cmake --workflow=check` green, `hello_window` prints 5 frames.
+**Demo gate:** `cmake --workflow --preset check` green, `hello_window` prints 5 frames.
 
 ---
 
-## M0.5 — Bring-up on Fedora *(~0.5 wk, in progress)*
+## M0.5 — Bring-up on Fedora *(done)*
 
-The Phase-0 scaffold was written but never compiled (network blocked on the authoring machine). Before any feature work begins, the scaffold must build clean on a fresh Fedora 40+ workstation with GCC 16 / Clang 20. Tracked in `specs/0000-bring-up.md`.
+The Phase-0 scaffold now builds and tests on the Fedora path. The historical checklist lives in `specs/0000-bring-up.md`; M1 work can start at `specs/0001-ecs-archetype-storage.md`.
 
-**Demo gate:** on a fresh clone, `cmake --workflow=check` finishes in under 60s cold and under 10s incremental; `hello_window` prints 5 frames; CI is green.
+**Demo gate:** on a fresh clone, `cmake --workflow --preset check` finishes in under 60s cold and under 10s incremental; `hello_window` prints 5 frames; CI is green.
 
 ---
 
@@ -88,7 +88,7 @@ The engine becomes usable for actual game prototyping by humans, not just for en
 - Hot-reload of plugins via `cr.h` (DLL swap)
 - Asset hot-reload (file watcher → `AssetEvent::Modified`)
 - Inspector panel using Dear ImGui (read-only first, then edit)
-- Reflection layer for components (C++23 fallback today, swap to P2996 when toolchains catch up)
+- Reflection layer for components (hand-written metadata first; use standard reflection only after toolchain support and an ADR)
 - Save/load scenes (JSON, then bincode)
 - Profiler integration (Tracy)
 - gamepad input (SDL3 already supports it; expose in `engine::Input`)

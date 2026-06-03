@@ -35,7 +35,7 @@ If you've used Bevy, this page is the only one you strictly need. The shapes mat
 - **Access rules.** Systems declare what they touch via parameter types; the scheduler parallelises based on conflicts.
 - **Commands deferral.** Structural changes from inside a system queue up; flushed at safe points.
 - **Events.** Per-reader cursors, double-buffered, dropped after two frames.
-- **Assets.** `Handle<T>` decouples references from storage; async load with placeholders.
+- **Assets.** `Handle<T>` decouples references from storage; M1 loading is synchronous with a placeholder/state API shaped for later async loading.
 - **Render world.** Per-frame snapshot via extract systems; sort + batch in render phases.
 
 ## What's deliberately different

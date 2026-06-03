@@ -35,6 +35,6 @@ Add the math layer (`engine/math/`) wrapping GLM, and the core spatial component
 ## Notes for the implementing agent
 
 - GLM uses column-major matrices. Document this in `engine/math/types.hpp`. Don't switch conventions.
-- Wrap GLM types via a thin `struct vec3 { float x, y, z; }` that converts to/from `glm::vec3` in inline `.hpp` helpers — but the helpers must not pull `<glm/glm.hpp>` transitively. Use a forward header `engine/math/detail/glm_fwd.hpp` that includes only the types.
+- Wrap GLM types via thin `engine::vec*`, `engine::quat`, and `engine::mat*` value types. Any conversion to GLM belongs in private backend/detail implementation files; public headers must not include GLM headers, forward declarations, or GLM-named aliases.
 - The trickiest review item: ensure `engine::mat4 * engine::mat4` does not regress to a GLM op on the binary. Use a small benchmark in `tests/unit/test_transform.cpp` to confirm SIMD codegen with `-O2`.
 - Read `docs/architecture/04-rendering.md` for how `GlobalTransform` and `Camera` are consumed by extract systems.

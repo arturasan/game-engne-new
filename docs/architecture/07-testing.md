@@ -10,7 +10,7 @@
 | Screenshot | Rendered output matches reference PNG | doctest + `odiff` | < 5 s per case |
 | Integration | Whole-app smoke test of an example | shell script in CI | < 30 s per case |
 
-`cmake --workflow=check` runs only `[fast]` tests via the `linux-clang-asan` test preset. Replay and screenshot suites remain part of the strategy and can be run explicitly as dedicated harnesses.
+`cmake --workflow --preset check` runs only `[fast]` tests via the `linux-clang-asan` test preset. Replay and screenshot suites remain part of the strategy and can be run explicitly as dedicated harnesses.
 
 ## File layout
 
@@ -58,7 +58,7 @@ A **replay** is `(input_stream, seed, frame_count) → frame_hash_sequence`.
 struct Replay {
     std::uint64_t seed;
     std::uint32_t frames;
-    std::vector<std::variant<KeyEvent, MouseBtnEvent, ...>> inputs;  // timestamped per frame
+    std::vector<std::variant<KeyEvent, MouseButtonEvent, ...>> inputs;  // timestamped per frame
 };
 ```
 

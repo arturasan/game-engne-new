@@ -118,7 +118,7 @@ If you spawn entities with `SpriteBundle` or `MeshBundle` and never touch a shad
 
 You start caring when:
 
-- You write a custom material (custom WGSL shader, custom pipeline).
+- You write a custom material (custom SPIR-V shader bytecode, custom pipeline).
 - You add a new visual primitive (lines, particles, decals).
 - You optimise (skip extract for off-screen entities, custom sort).
 

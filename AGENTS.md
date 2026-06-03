@@ -24,7 +24,7 @@ git submodule update --init --recursive
 # (vcpkg manifest mode auto-resolves deps on configure)
 
 # Fast inner loop (~10s incremental)
-cmake --workflow=check
+cmake --workflow --preset check
 
 # Full configure/build for a single preset
 cmake --preset linux-clang-asan && cmake --build --preset linux-clang-asan
@@ -53,7 +53,7 @@ Active presets: `linux-clang-asan`, `linux-gcc-rel`. The `win-*` presets remain 
 
 ## Test framework
 
-doctest. Tag tests `[fast]` (must run in <100ms) or `[slow]`. `cmake --workflow=check` runs only `[fast]`.
+doctest. Tag tests `[fast]` (must run in <100ms) or `[slow]`. `cmake --workflow --preset check` runs only `[fast]`.
 
 ## Where to read more
 

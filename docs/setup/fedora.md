@@ -76,6 +76,15 @@ The fast inner loop:
 cmake --workflow --preset check          # configure + build + [fast] tests, ~10s incremental
 ```
 
+## Editor / clangd setup
+
+The `linux-clang-asan` preset exports a compile database for clangd. After the first successful workflow run, link it at the repo root and restart your editor or clangd:
+
+```sh
+cmake --workflow --preset check
+ln -sfn build/linux-clang-asan/compile_commands.json compile_commands.json
+```
+
 ## Headless rendering (CI parity)
 
 Screenshot tests pin to the **llvmpipe** software rasterizer for bit-stable output across machines:

@@ -26,7 +26,7 @@ public:
     // Resource creation. All return owning handles; lifetimes tied to Renderer.
     Result<Texture>     create_texture(const TextureDesc&);
     Result<Buffer>      create_buffer(const BufferDesc&);
-    Result<ShaderModule> create_shader(std::span<const std::byte> wgsl_or_spirv);
+    Result<ShaderModule> create_shader(std::span<const std::byte> spirv);
     Result<Pipeline>    create_pipeline(const PipelineDesc&);
     Result<BindGroup>   create_bind_group(const BindGroupDesc&);
 

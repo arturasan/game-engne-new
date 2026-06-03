@@ -31,7 +31,8 @@ public:
 
 class AssetServer {
 public:
-    // Returns a Handle immediately; load happens on a worker thread.
+    // M1 sync shim: blocks like load_sync, then returns a ready/failed handle.
+    // A future scheduler/thread-pool spec may make this truly asynchronous.
     template <typename T>
     Handle<T> load(std::string_view path);
 
@@ -73,12 +74,12 @@ auto& img = *world.resource<Assets<Image>>().get(h);
 | Capability | M1 | Later |
 |---|---|---|
 | Sync load | yes | yes |
-| Async load (returns Handle immediately) | API shape only | M2 (coroutines + thread pool) |
+| Async load (returns Handle immediately) | sync shim only | M2+ after scheduler/thread-pool work |
 | Hot reload (file watcher) | no | M3 |
 | Sub-assets (e.g. materials inside glTF) | API shape only | M2 |
 | Streaming (LOD, partial load) | no | M6 |
 
-The M1 implementation calls the loader synchronously inside `load_sync`. The async `load` returns immediately with a Handle pointing to a placeholder; in M1 it transparently forwards to `load_sync`. This lets call sites be written for the final async API today without M1 needing the thread pool.
+The M1 implementation calls loaders synchronously. `load_sync` returns `Result<Handle<T>>`; `load` is only a convenience shim that performs the same blocking work, records `AssetState`, and returns the resulting handle. M1 must not create worker threads or mutate `Assets<T>` from background tasks. True async loading is deferred until scheduler/thread-pool work defines deterministic handoff points.
 
 ## Handle semantics
 
@@ -160,7 +161,7 @@ Atomicity requires reference counts; until then, hot reload is a known-unsafe op
 |---|---|---|
 | `Handle<T>` is POD `{id,gen}`, not ref-counted in M1 | Simplicity now; refcount added when needed for hot reload | Always `shared_ptr<T>`-like (more overhead, harder to serialize) |
 | Loaders take bytes, not paths | Engine owns I/O, loader is pure CPU work, easy to test | Loaders open files themselves (couples I/O to format code) |
-| Async `load` exists from day one as a sync shim | Call sites written for the final API; no churn later | Add async API in M2 (callers all need rewriting) |
+| `load` exists from day one as a sync shim | Call sites written for the final API; no churn later | Add async API only when scheduler/thread-pool work lands |
 | Virtual paths only | Portable, archive-able later | Real filesystem paths (couples assets to dev layout) |
 
 ## Open questions
