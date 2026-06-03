@@ -13,7 +13,7 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: ubuntu-24.04
     container:
-      image: fedora:40
+      image: fedora:rawhide
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +25,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with: { submodules: recursive }
 
       - name: install toolchain
         run: |
@@ -33,7 +32,8 @@ jobs:
             gcc gcc-c++ clang clang-tools-extra lld mold \
             cmake ninja-build sccache \
             git python3 python3-pip pre-commit \
-            libX11-devel libXcursor-devel libXrandr-devel libXi-devel \
+            autoconf autoconf-archive automake libtool perl-core \
+            libX11-devel libXcursor-devel libXrandr-devel libXi-devel libXtst-devel \
             libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
             mesa-vulkan-drivers vulkan-loader-devel \
             alsa-lib-devel pulseaudio-libs-devel \
@@ -52,7 +52,7 @@ jobs:
         run: cmake --build --preset ${{ matrix.preset }}
 
       - name: test
-        run: ctest --preset ${{ matrix.preset }} --output-on-failure --output-junit build/${{ matrix.preset }}/junit.xml
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure --output-junit junit.xml
 
       - name: upload test report
         if: always()

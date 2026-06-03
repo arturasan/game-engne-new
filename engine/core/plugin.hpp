@@ -11,4 +11,4 @@ concept Plugin = requires(T t, App& app) {
     { t.build(app) } -> std::same_as<void>;
 };
 
-}  // namespace engine
+} // namespace engine

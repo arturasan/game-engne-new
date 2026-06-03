@@ -17,7 +17,7 @@ This is **not** feature work. The goal is: scaffold builds, tests pass, CI is gr
 - [ ] `cmake --build --preset linux-clang-asan` builds cleanly.
 - [ ] `cmake --preset linux-gcc-rel` configures + builds cleanly.
 - [ ] `ctest --preset linux-clang-asan` passes (all 3 `test_app.cpp` cases green).
-- [ ] `cmake --workflow=check` finishes in under 60s cold, under 10s incremental.
+- [ ] `cmake --workflow --preset check` finishes in under 60s cold, under 10s incremental.
 - [ ] `./build/linux-clang-asan/Debug/examples/hello_window/hello_window` prints `frame 0` through `frame 4` and exits 0.
 - [ ] `pre-commit run --all-files` passes on a fresh clone (after `pre-commit install`).
 - [ ] GitHub Actions CI green on a no-op PR for both `linux-clang-asan` and `linux-gcc-rel` jobs.
@@ -51,9 +51,9 @@ This is **not** feature work. The goal is: scaffold builds, tests pass, CI is gr
 - Expect breakage. Nothing in this repo has ever compiled. Read this spec, read `docs/setup/fedora.md`, then start building.
 - When something fails, the fix should be the smallest possible change. If you find yourself rewriting a file, stop — file an issue and ask for guidance instead.
 - For every fix, commit with `build:` or `fix:` (Conventional Commits). One concern per commit; this PR will be reviewed line-by-line.
-- The first useful inner loop is `cmake --workflow=check`. If it doesn't exist or doesn't work, fix that first — every later spec depends on it.
+- The first useful inner loop is `cmake --workflow --preset check`. If it doesn't exist or doesn't work, fix that first — every later spec depends on it.
 - If a Fedora package is missing or misnamed in `docs/setup/fedora.md` or the CI workflow, update **both** in the same commit.
-- If GCC 16 or Clang 20 are not available on your host, use `toolbox create --image registry.fedoraproject.org/fedora:41 engine` per the setup doc. Do not lower the compiler floor; ADR 0002 is firm.
+- If GCC 16 or Clang 20 are not available on your host, use `toolbox create --image registry.fedoraproject.org/fedora:rawhide engine` per the setup doc. Do not lower the compiler floor; ADR 0002 is firm.
 
 ## What "done" looks like
 

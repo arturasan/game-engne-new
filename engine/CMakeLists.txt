@@ -1,7 +1,7 @@
 add_library(engine)
 add_library(engine::engine ALIAS engine)
 
-target_compile_features(engine PUBLIC cxx_std_23)
+target_compile_features(engine PUBLIC cxx_std_26)
 
 target_include_directories(engine
     PUBLIC
