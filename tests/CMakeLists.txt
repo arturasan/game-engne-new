@@ -2,6 +2,7 @@ find_package(doctest CONFIG REQUIRED)
 
 add_executable(engine_tests
     unit/test_app.cpp
+    unit/test_ecs.cpp
 )
 
 target_link_libraries(engine_tests PRIVATE engine::engine doctest::doctest)
