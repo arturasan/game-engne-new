@@ -29,7 +29,7 @@ sudo dnf install -y \
     git pre-commit \
     python3 python3-pip \
     autoconf autoconf-archive automake libtool perl-core \
-    libX11-devel libXcursor-devel libXrandr-devel libXi-devel \
+    libX11-devel libXcursor-devel libXrandr-devel libXi-devel libXtst-devel \
     libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
     mesa-vulkan-drivers vulkan-loader-devel vulkan-tools \
     alsa-lib-devel pulseaudio-libs-devel \
