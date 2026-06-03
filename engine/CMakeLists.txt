@@ -24,4 +24,8 @@ target_sources(engine
         core/app.hpp
         core/plugin.hpp
         core/schedule.hpp
+        ecs/entity.hpp
+        ecs/world.hpp
+        ecs/detail/archetype.hpp
+        ecs/detail/component_id.hpp
 )
