@@ -2,6 +2,7 @@ add_library(engine)
 add_library(engine::engine ALIAS engine)
 
 find_package(spdlog CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)
 
 target_compile_features(engine PUBLIC cxx_std_26)
 
@@ -19,9 +20,14 @@ target_sources(engine
         core/app.cpp
         core/schedule.cpp
         core/spdlog_backend.cpp
+        platform/detail/sdl3_window_backend.cpp
+        platform/events.cpp
+        platform/input.cpp
+        platform/platform.cpp
+        platform/window.cpp
 )
 
-target_link_libraries(engine PRIVATE spdlog::spdlog)
+target_link_libraries(engine PRIVATE SDL3::SDL3 spdlog::spdlog)
 
 target_sources(engine
     PUBLIC FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_SOURCE_DIR}
@@ -35,4 +41,10 @@ target_sources(engine
         ecs/world.hpp
         ecs/detail/archetype.hpp
         ecs/detail/component_id.hpp
+        platform/events.hpp
+        platform/input.hpp
+        platform/platform.hpp
+        platform/types.hpp
+        platform/window.hpp
+        platform/detail/window_backend.hpp
 )
