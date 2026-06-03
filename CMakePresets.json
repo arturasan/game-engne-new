@@ -7,6 +7,7 @@
       "hidden": true,
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
@@ -15,7 +16,6 @@
       "name": "linux-clang-asan",
       "inherits": "base",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
         "CMAKE_LINKER_TYPE": "MOLD",
@@ -29,7 +29,6 @@
       "name": "linux-gcc-rel",
       "inherits": "base",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
         "CMAKE_LINKER_TYPE": "MOLD",
@@ -84,6 +83,9 @@
   ],
   "testPresets": [
     { "name": "linux-clang-asan", "configurePreset": "linux-clang-asan", "configuration": "Debug",
+      "filter": { "include": { "label": "fast" } },
+      "output": { "outputOnFailure": true } },
+    { "name": "linux-gcc-rel",    "configurePreset": "linux-gcc-rel",    "configuration": "Release",
       "filter": { "include": { "label": "fast" } },
       "output": { "outputOnFailure": true } },
     { "name": "win-msvc-dbg",     "configurePreset": "win-msvc-dbg",     "configuration": "Debug",
