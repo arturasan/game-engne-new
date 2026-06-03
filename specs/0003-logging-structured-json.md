@@ -1,7 +1,7 @@
 # 0003 — Structured JSON logging
 
 - Owner: TBD
-- Status: draft
+- Status: implemented
 - Tracking issue: TBD
 
 ## Scope
@@ -10,14 +10,14 @@ Wrap spdlog behind `engine::log` in `engine/core/log.hpp`. Default sinks: pretty
 
 ## Acceptance criteria
 
-- [ ] `engine::log::trace/debug/info/warn/error/critical(fmt, args...)` use `std::format` syntax.
-- [ ] JSON sink writes one object per line: `{ts, level, target, message, thread, source_location}`.
-- [ ] `LogPlugin::build(App&)` installs both sinks. Sink configuration via `LogConfig { level, json_path, color }`.
-- [ ] `last_run.jsonl` is truncated at process start, appended during run, flushed on `App::run()` exit.
-- [ ] `log_contains({level, message_contains})` test helper in `tests/support/log_assert.hpp` parses the JSON and returns `bool`.
-- [ ] Public headers include no spdlog. Grep test: `grep -r 'spdlog' engine/**/*.hpp` returns zero hits.
-- [ ] `engine::log::set_level(LogLevel)` works at runtime.
-- [ ] Unit tests in `tests/unit/test_log.cpp` tagged `[fast]`: format placeholders, level filtering, JSON well-formedness, `log_contains` helper.
+- [x] `engine::log::trace/debug/info/warn/error/critical(fmt, args...)` use `std::format` syntax.
+- [x] JSON sink writes one object per line: `{ts, level, target, message, thread, source_location}`.
+- [x] `LogPlugin::build(App&)` installs both sinks. Sink configuration via `LogConfig { level, json_path, color }`.
+- [x] `last_run.jsonl` is truncated at process start, appended during run, flushed on `App::run()` exit.
+- [x] `log_contains({level, message_contains})` test helper in `tests/support/log_assert.hpp` parses the JSON and returns `bool`.
+- [x] Public headers include no spdlog. Grep test: `grep -r 'spdlog' engine/**/*.hpp` returns zero hits.
+- [x] `engine::log::set_level(LogLevel)` works at runtime.
+- [x] Unit tests in `tests/unit/test_log.cpp` tagged `[fast]`: format placeholders, level filtering, JSON well-formedness, `log_contains` helper.
 
 ## Out of scope
 
