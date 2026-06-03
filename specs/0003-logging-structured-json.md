@@ -1,8 +1,11 @@
 # 0003 — Structured JSON logging
 
 - Owner: TBD
+- Milestone: M1
 - Status: implemented
 - Tracking issue: TBD
+- Implementation PR: https://github.com/arturasan/game-engne-new/pull/4
+- Merged in: 98c9bff (2026-06-03)
 
 ## Scope
 

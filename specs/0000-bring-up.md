@@ -1,8 +1,11 @@
 # 0000 — Phase-0 bring-up on Fedora
 
 - Owner: TBD (first agent on the new workstation)
-- Status: merged
+- Milestone: M0.5
+- Status: implemented
 - Tracking issue: TBD
+- Implementation PR: https://github.com/arturasan/game-engne-new/pull/1
+- Merged in: a909440 (2026-06-03)
 
 ## Scope
 

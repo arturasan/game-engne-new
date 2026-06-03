@@ -1,8 +1,11 @@
 # 0002 — Platform: Window + Input (SDL3 hidden)
 
 - Owner: TBD
-- Status: in-review
+- Milestone: M1
+- Status: implemented
 - Tracking issue: TBD
+- Implementation PR: https://github.com/arturasan/game-engne-new/pull/5
+- Merged in: cb473ea (2026-06-03)
 
 ## Scope
 

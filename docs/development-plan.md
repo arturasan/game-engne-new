@@ -12,8 +12,8 @@ If you are an agent picking up work, read this **after** `AGENTS.md` and **befor
 |---|---|---|
 | M0  — Scaffolding | done (on disk, never compiled) | 27 files, 12 specs, full doc tree |
 | M0.5 — Bring-up on Fedora | done (merged) | `specs/0000-bring-up.md` |
-| M1  — Playable engine core | **next** | 12 specs ready; start with `specs/0001-ecs-archetype-storage.md` |
-| M2–M6 | future | roadmap only |
+| M1  — Playable engine core | **active** | Current specs are M1 backlog unless their metadata marks them deferred or `Milestone: Future` |
+| M2–M6 | future | roadmap only; M2 planning starts only after the M1 completion review |
 
 The Phase-0 bring-up risk is retired: the scaffold now has a working Fedora loop via `cmake --workflow --preset check`. Future agents should keep that command green before starting feature work.
 
@@ -89,9 +89,10 @@ The Phase-0 bring-up risk is retired: the scaffold now has a working Fedora loop
 0010 Screenshot harness (0.5 wk)
 0011 PBR plugin         (1.0 wk)
 0012 Audio              (0.3 wk)
+0013 Commands           (TBD)     — M1 backlog; prepares M2 scheduler work
 ```
 
-Total: 7.8 weeks of sequential work for one experienced engineer with an AI agent. Halve roughly for two engineers working independent paths through the DAG.
+Total before spec 0013 was 7.8 weeks of sequential work for one experienced engineer with an AI agent. Spec 0013 needs sizing during M1 execution. Halve roughly for two engineers working independent paths through the DAG.
 
 ### Suggested ordering for two agents in parallel
 
@@ -104,18 +105,53 @@ The two tracks join at 0008 (sprite) which is the first cross-track integration 
 
 ```
 1. Read AGENTS.md (always re-read; it's short).
-2. Read the spec end to end. Read its Out-of-scope twice.
-3. Read the architecture chapter(s) it references.
-4. grep the engine for existing related code — there is more reuse than you think.
-5. Write public headers + tests FIRST. Implementation second.
-6. After every meaningful change: `cmake --workflow --preset check`.
-7. When all Acceptance Criteria checkboxes tick: open a PR.
-8. Address review. Merge. Update the spec file with a one-line note if reality deviated from plan.
+2. Locate the roadmap milestone and confirm the active spec belongs to that milestone.
+3. Read the spec end to end. Read its Out-of-scope twice.
+4. Read the architecture chapter(s) it references.
+5. grep the engine for existing related code — there is more reuse than you think.
+6. Write public headers + tests FIRST. Implementation second.
+7. After every meaningful change: `cmake --workflow --preset check`.
+8. Before opening a PR, update the spec status, checklist, and PR link as described below.
+9. Address review. Merge. Update the spec file with a one-line note if reality deviated from plan.
 ```
+
+Do not implement future architecture text unless the active spec requires it.
+
+### Spec metadata
+
+Every spec starts with this metadata block:
+
+```md
+- Owner: TBD
+- Milestone: M1
+- Status: draft
+- Tracking issue: TBD
+- Implementation PR: TBD
+- Merged in: TBD
+```
+
+Field meanings:
+
+- `Owner`: person or agent currently responsible for moving the spec.
+- `Milestone`: roadmap milestone that owns the work, such as `M1`; use `Future` only when the spec is intentionally outside the current milestone.
+- `Status`: one of the status values below.
+- `Tracking issue`: issue URL or number for discussion before implementation, or `TBD`.
+- `Implementation PR`: PR URL that implements the spec, or `TBD`.
+- `Merged in`: merge commit, release, or PR merge reference once the implementation has landed, or `TBD`.
+
+Status values:
+
+- `draft`: accepted backlog item that is not currently in review.
+- `in-review`: implementation PR is open and review is in progress.
+- `implemented`: implementation PR has merged; all completed and incomplete acceptance criteria are recorded in the spec.
+- `deferred`: intentionally postponed; keep the reason in the spec or roadmap.
+- `superseded`: replaced by another spec, ADR, or roadmap item; link the replacement.
+
+When Codex opens a PR for a spec, it must change `Status` to `in-review` and add the PR URL to `Implementation PR`. It must check off only acceptance criteria actually satisfied by that PR. If a criterion is partially satisfied, leave it unchecked and add a short note explaining what shipped and what remains. After the implementation PR merges, a follow-up docs/process PR may change `Status` to `implemented` and fill `Merged in`.
 
 ### Definition of done for an M1 spec
 
-- All Acceptance Criteria checked.
+- All satisfied Acceptance Criteria checked; any partial criterion remains unchecked with a note.
 - CI green on both jobs.
 - Public headers do not include any third-party header (the grep canary).
 - A `[fast]` doctest covers the new behavior. Run in <100ms.
@@ -143,19 +179,19 @@ ctest --preset linux-clang-asan
 
 ## M2 — Renderer maturity (~5 wk)
 
-Not specced in detail yet. `0013` is reserved for `specs/0013-commands-deferred-mutation.md`; open the first renderer-maturity spec (`0014-material-shader-api.md`) the moment M1 demo gate is passed. Suggested order:
+Not specced in detail yet. M2 planning starts only after the M1 completion review. Do not create M2 specs, including renderer-maturity specs, before the M1 demo gate is passed and the review records what actually shipped.
 
-```
-0014 Material/shader API (the one approved abstraction leak)
-0015 Render graph
-0016 Multi-camera + viewports
-0017 Render layers
-0018 Post-process chain
-0019 Sprite atlas + tilemap
-0020 Skeletal animation
-```
+Possible M2 areas, to be specced later:
 
-Parallelism scheduler (planned spec: `0021-parallel-system-executor`) — touch in parallel with the renderer specs; it has no rendering dependency. Audio determinism (planned spec: `0022-audio-replay`) — open if the open question from `07-testing.md` becomes a real need.
+- Material/shader API (the one approved abstraction leak)
+- Render graph
+- Multi-camera + viewports
+- Render layers
+- Post-process chain
+- Sprite atlas + tilemap
+- Skeletal animation
+
+Parallelism scheduler and audio determinism are future planning topics; do not assign spec numbers or start PRs for them until the M1 completion review opens M2 planning.
 
 ---
 
@@ -202,7 +238,7 @@ The single biggest velocity risk is the **abstraction rule + renderer**. Spec 00
 ## Tracking
 
 - **Per-milestone status:** updated in `docs/roadmap.md` (this file is process, not state).
-- **Per-spec status:** the `Status` field at the top of each `specs/*.md` file (`draft`, `in-progress`, `merged`).
+- **Per-spec status:** the metadata block at the top of each `specs/*.md` file (`draft`, `in-review`, `implemented`, `deferred`, `superseded`).
 - **Bring-up findings:** the PR body for `specs/0000-bring-up.md`. Skim this before starting M1 — it tells you what to expect from the toolchain.
 - **ADR log:** `docs/adr/`. Read newest first when an architectural question comes up.
 

@@ -1,8 +1,11 @@
 # 0004 — Resources and events
 
 - Owner: TBD
-- Status: in-review
+- Milestone: M1
+- Status: implemented
 - Tracking issue: TBD
+- Implementation PR: https://github.com/arturasan/game-engne-new/pull/6
+- Merged in: 9bb11a5 (2026-06-03)
 
 ## Scope
 

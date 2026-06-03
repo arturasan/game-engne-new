@@ -1,8 +1,11 @@
 # 0001 — ECS archetype storage
 
 - Owner: TBD
-- Status: draft
+- Milestone: M1
+- Status: implemented
 - Tracking issue: TBD
+- Implementation PR: https://github.com/arturasan/game-engne-new/pull/3
+- Merged in: f7c19cd (2026-06-03)
 
 ## Scope
 
@@ -10,13 +13,13 @@ Implement the first cut of the ECS storage layer in `engine/ecs/`. Components ar
 
 ## Acceptance criteria
 
-- [ ] `engine::World` exposes: `spawn()`, `despawn(Entity)`, `add<T>(Entity, T)`, `remove<T>(Entity) -> bool`, `get<T>(Entity) -> T*`, `has<T>(Entity) -> bool`.
-- [ ] `engine::Entity` is a 64-bit POD: `{uint32 id, uint32 generation}`. Reusing a freed slot bumps the generation; stale handles fail `has()` cleanly.
-- [ ] Components are stored in **archetype tables** (one contiguous `std::vector<T>` per component column per archetype).
-- [ ] Archetype transitions on add/remove are O(component-count), not O(entity-count). Use an edge cache on each archetype.
-- [ ] A trivial `for_each<A, B>(World&, fn)` iterator visits every entity that has both `A` and `B`, with no per-archetype hash lookup in the inner loop.
-- [ ] Unit tests in `tests/unit/test_ecs.cpp` cover: spawn/despawn, generational invalidation, add+remove round-trip, iteration over 100k entities across 3+ archetypes.
-- [ ] Storage behavior tests are tagged `[fast]`; the 100k entity stress case may be tagged `[slow]` so the `check` preset remains fast.
+- [x] `engine::World` exposes: `spawn()`, `despawn(Entity)`, `add<T>(Entity, T)`, `remove<T>(Entity) -> bool`, `get<T>(Entity) -> T*`, `has<T>(Entity) -> bool`.
+- [x] `engine::Entity` is a 64-bit POD: `{uint32 id, uint32 generation}`. Reusing a freed slot bumps the generation; stale handles fail `has()` cleanly.
+- [x] Components are stored in **archetype tables** (one contiguous `std::vector<T>` per component column per archetype).
+- [x] Archetype transitions on add/remove are O(component-count), not O(entity-count). Use an edge cache on each archetype.
+- [x] A trivial `for_each<A, B>(World&, fn)` iterator visits every entity that has both `A` and `B`, with no per-archetype hash lookup in the inner loop.
+- [x] Unit tests in `tests/unit/test_ecs.cpp` cover: spawn/despawn, generational invalidation, add+remove round-trip, iteration over 100k entities across 3+ archetypes.
+- [x] Storage behavior tests are tagged `[fast]`; the 100k entity stress case may be tagged `[slow]` so the `check` preset remains fast.
 
 ## Out of scope
 
