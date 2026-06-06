@@ -6,6 +6,14 @@ This file is the single source of truth for **all** AI agents (Codex, Copilot, G
 
 A Bevy-inspired 2D + 3D game engine in C++26. Plugin architecture. **Fedora-only through M4** (see ADR 0002); Windows + macOS return at M5.
 
+## Bevy grounding
+
+This engine is conceptually inspired by Bevy. Bevy is the primary external grounding reference for App and plugins, ECS entities/components/queries, resources, events/messages, schedules and systems, commands/deferred mutation, transforms and cameras, assets, rendering concepts, examples, and user-facing ergonomics.
+
+Authority order: active spec → accepted ADRs → project architecture constraints → existing code and tests → pinned Bevy docs/examples/source → other external research. The active spec remains authoritative; Bevy references clarify semantics but must not silently expand scope, override ADRs, or change the C++26/SDL3/SDL GPU/Linux-first/M1 constraints. Rust-specific implementation mechanisms must not be copied mechanically into C++; adapt semantics and ergonomics, do not translate Rust line by line. Ask before deviating from the active spec.
+
+When behavior is uncertain: check the active spec, ADRs, architecture, and existing tests; consult the pinned Bevy documentation and relevant examples; consult Bevy source when docs are insufficient; consult Bevy issues/RFCs/design discussions only when rationale is needed. Report the uncertainty, Bevy behavior found, exact reference consulted, proposed C++ adaptation, and any project conflict. Wait for approval before changing the contract. Full protocol: `docs/references/bevy.md`.
+
 ## Non-negotiable rules
 
 1. **No third-party type appears in any public engine header.** All deps (SDL3, SDL3 GPU, spdlog, GLM, miniaudio, etc.) live behind interfaces in `engine/` and are implemented in `*_backend.cpp` files. Grep test: `grep -rE 'SDL_|SDL_GPU|glm::|spdlog|ImGui' engine/**/*.hpp` must return zero hits.
