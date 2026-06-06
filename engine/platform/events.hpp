@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <variant>
-#include <vector>
 
 #include "engine/platform/input.hpp"
 #include "engine/platform/types.hpp"
@@ -36,17 +35,6 @@ struct WindowResizeEvent {
 };
 
 struct WindowCloseRequested {};
-
-struct PlatformEvents {
-    std::vector<KeyEvent> key;
-    std::vector<MouseButtonEvent> mouse_button;
-    std::vector<MouseMotionEvent> mouse_motion;
-    std::vector<MouseWheelEvent> mouse_wheel;
-    std::vector<WindowResizeEvent> window_resize;
-    std::vector<WindowCloseRequested> window_close_requested;
-
-    void clear() noexcept;
-};
 
 using PlatformEvent = std::variant<KeyEvent, MouseButtonEvent, MouseMotionEvent, MouseWheelEvent,
                                    WindowResizeEvent, WindowCloseRequested>;

@@ -18,8 +18,6 @@ struct PlatformPlugin {
 [[nodiscard]] const Window& window(const App& app);
 [[nodiscard]] Input& input(App& app);
 [[nodiscard]] const Input& input(const App& app);
-[[nodiscard]] PlatformEvents& platform_events(App& app);
-[[nodiscard]] const PlatformEvents& platform_events(const App& app);
 
 void push_headless_event(App& app, PlatformEvent event);
 void pump_platform_events(App& app);
