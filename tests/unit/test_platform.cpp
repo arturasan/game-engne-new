@@ -54,24 +54,62 @@ TEST_CASE("platform public enums keep stable integer mappings" * doctest::test_s
     CHECK(static_cast<std::uint8_t>(engine::MouseButton::X2) == 4);
 }
 
-TEST_CASE("headless key events update pressed and just state lifecycle" *
+TEST_CASE("PlatformPlugin registers resources and typed event channels" *
+          doctest::test_suite("fast")) {
+    enable_headless();
+    engine::App app;
+
+    CHECK_FALSE(engine::platform_attached(app));
+
+    app.add_plugin(engine::PlatformPlugin{});
+
+    CHECK(engine::platform_attached(app));
+    CHECK(app.world().try_resource<engine::Window>() != nullptr);
+    CHECK(app.world().try_resource<engine::Input>() != nullptr);
+    CHECK(app.world().try_resource<engine::Events<engine::KeyEvent>>() != nullptr);
+    CHECK(app.world().try_resource<engine::Events<engine::MouseButtonEvent>>() != nullptr);
+    CHECK(app.world().try_resource<engine::Events<engine::MouseMotionEvent>>() != nullptr);
+    CHECK(app.world().try_resource<engine::Events<engine::MouseWheelEvent>>() != nullptr);
+    CHECK(app.world().try_resource<engine::Events<engine::WindowResizeEvent>>() != nullptr);
+    CHECK(app.world().try_resource<engine::Events<engine::WindowCloseRequested>>() != nullptr);
+}
+
+TEST_CASE("headless key events update input and typed events in update systems" *
           doctest::test_suite("fast")) {
     enable_headless();
     engine::App app;
     app.add_plugin(engine::PlatformPlugin{});
+    std::size_t key_events_seen = 0;
+    bool update_saw_pressed = false;
+    bool update_saw_just_pressed = false;
+    bool update_saw_release = false;
+    app.add_system("observe_key", [&](engine::Res<engine::Input> observed_input,
+                                      engine::EventReader<engine::KeyEvent> reader) {
+        key_events_seen += reader.read().size();
+        update_saw_pressed = update_saw_pressed || observed_input->key_pressed(engine::Key::Escape);
+        update_saw_just_pressed =
+            update_saw_just_pressed || observed_input->key_just_pressed(engine::Key::Escape);
+        update_saw_release =
+            update_saw_release || observed_input->key_just_released(engine::Key::Escape);
+    });
 
     engine::push_headless_event(app, engine::KeyEvent{.key = engine::Key::Escape, .pressed = true});
     run_one_frame(app);
     CHECK(engine::input(app).key_pressed(engine::Key::Escape));
     CHECK(engine::input(app).key_just_pressed(engine::Key::Escape));
     CHECK_FALSE(engine::input(app).key_just_released(engine::Key::Escape));
-    REQUIRE(engine::platform_events(app).key.size() == 1);
-    CHECK(engine::platform_events(app).key[0].key == engine::Key::Escape);
+    CHECK(update_saw_pressed);
+    CHECK(update_saw_just_pressed);
+    REQUIRE(app.world().resource<engine::Events<engine::KeyEvent>>().read().size() == 1U);
+    CHECK(app.world().resource<engine::Events<engine::KeyEvent>>().read()[0].key ==
+          engine::Key::Escape);
+    CHECK(key_events_seen == 1U);
 
     run_one_frame(app);
     CHECK(engine::input(app).key_pressed(engine::Key::Escape));
     CHECK_FALSE(engine::input(app).key_just_pressed(engine::Key::Escape));
     CHECK_FALSE(engine::input(app).key_just_released(engine::Key::Escape));
+    CHECK(key_events_seen == 1U);
 
     engine::push_headless_event(app,
                                 engine::KeyEvent{.key = engine::Key::Escape, .pressed = false});
@@ -79,10 +117,11 @@ TEST_CASE("headless key events update pressed and just state lifecycle" *
     CHECK_FALSE(engine::input(app).key_pressed(engine::Key::Escape));
     CHECK_FALSE(engine::input(app).key_just_pressed(engine::Key::Escape));
     CHECK(engine::input(app).key_just_released(engine::Key::Escape));
+    CHECK(update_saw_release);
+    CHECK(key_events_seen == 2U);
 }
 
-TEST_CASE("headless mouse button events update pressed and just state lifecycle" *
-          doctest::test_suite("fast")) {
+TEST_CASE("headless mouse events update input and typed channels" * doctest::test_suite("fast")) {
     enable_headless();
     engine::App app;
     app.add_plugin(engine::PlatformPlugin{});
@@ -97,6 +136,9 @@ TEST_CASE("headless mouse button events update pressed and just state lifecycle"
     CHECK(engine::input(app).mouse_just_pressed(engine::MouseButton::Left));
     CHECK_FALSE(engine::input(app).mouse_just_released(engine::MouseButton::Left));
     CHECK(engine::input(app).mouse_position() == engine::vec2{10.0F, 20.0F});
+    REQUIRE(app.world().resource<engine::Events<engine::MouseButtonEvent>>().read().size() == 1U);
+    CHECK(app.world().resource<engine::Events<engine::MouseButtonEvent>>().read()[0].button ==
+          engine::MouseButton::Left);
 
     run_one_frame(app);
     CHECK(engine::input(app).mouse_pressed(engine::MouseButton::Left));
@@ -112,13 +154,8 @@ TEST_CASE("headless mouse button events update pressed and just state lifecycle"
     CHECK_FALSE(engine::input(app).mouse_just_pressed(engine::MouseButton::Left));
     CHECK(engine::input(app).mouse_just_released(engine::MouseButton::Left));
     CHECK(engine::input(app).mouse_position() == engine::vec2{12.0F, 24.0F});
-}
-
-TEST_CASE("headless motion and wheel events update deltas for one frame" *
-          doctest::test_suite("fast")) {
-    enable_headless();
-    engine::App app;
-    app.add_plugin(engine::PlatformPlugin{});
+    REQUIRE(app.world().resource<engine::Events<engine::MouseButtonEvent>>().read().size() == 1U);
+    CHECK_FALSE(app.world().resource<engine::Events<engine::MouseButtonEvent>>().read()[0].pressed);
 
     engine::push_headless_event(app, engine::MouseMotionEvent{
                                          .position = engine::vec2{30.0F, 40.0F},
@@ -131,6 +168,12 @@ TEST_CASE("headless motion and wheel events update deltas for one frame" *
     CHECK(engine::input(app).mouse_position() == engine::vec2{30.0F, 40.0F});
     CHECK(engine::input(app).mouse_delta() == engine::vec2{3.0F, 4.0F});
     CHECK(engine::input(app).wheel_delta() == engine::vec2{1.0F, -2.0F});
+    REQUIRE(app.world().resource<engine::Events<engine::MouseMotionEvent>>().read().size() == 1U);
+    CHECK(app.world().resource<engine::Events<engine::MouseMotionEvent>>().read()[0].delta ==
+          engine::vec2{3.0F, 4.0F});
+    REQUIRE(app.world().resource<engine::Events<engine::MouseWheelEvent>>().read().size() == 1U);
+    CHECK(app.world().resource<engine::Events<engine::MouseWheelEvent>>().read()[0].delta ==
+          engine::vec2{1.0F, -2.0F});
 
     run_one_frame(app);
     CHECK(engine::input(app).mouse_position() == engine::vec2{30.0F, 40.0F});
@@ -155,13 +198,52 @@ TEST_CASE("headless window resize and close requested update window state" *
                                      });
     run_one_frame(app);
     CHECK(engine::window(app).size() == engine::Extent2d{800, 600});
-    REQUIRE(engine::platform_events(app).window_resize.size() == 1);
-    CHECK(engine::platform_events(app).window_resize[0].size == engine::Extent2d{800, 600});
+    REQUIRE(app.world().resource<engine::Events<engine::WindowResizeEvent>>().read().size() == 1U);
+    CHECK(app.world().resource<engine::Events<engine::WindowResizeEvent>>().read()[0].size ==
+          engine::Extent2d{800, 600});
 
     engine::push_headless_event(app, engine::WindowCloseRequested{});
     run_one_frame(app);
     CHECK(engine::window(app).should_close());
-    CHECK(engine::platform_events(app).window_close_requested.size() == 1);
+    CHECK(app.world().resource<engine::Events<engine::WindowCloseRequested>>().read().size() == 1U);
+}
+
+TEST_CASE("platform pump runs in First before normal Update systems" *
+          doctest::test_suite("fast")) {
+    enable_headless();
+    engine::App app;
+    app.add_plugin(engine::PlatformPlugin{});
+    bool update_saw_event = false;
+    bool update_saw_input = false;
+    app.add_system("observe_first_pump", [&](engine::Res<engine::Input> observed_input,
+                                             engine::EventReader<engine::KeyEvent> reader) {
+        update_saw_event = update_saw_event || !reader.read().empty();
+        update_saw_input = update_saw_input || observed_input->key_just_pressed(engine::Key::A);
+    });
+
+    engine::push_headless_event(app, engine::KeyEvent{.key = engine::Key::A, .pressed = true});
+    run_one_frame(app);
+
+    CHECK(update_saw_event);
+    CHECK(update_saw_input);
+}
+
+TEST_CASE("platform resources and events are isolated between App instances" *
+          doctest::test_suite("fast")) {
+    enable_headless();
+    engine::App first;
+    engine::App second;
+    first.add_plugin(engine::PlatformPlugin{});
+    second.add_plugin(engine::PlatformPlugin{});
+
+    engine::push_headless_event(first, engine::KeyEvent{.key = engine::Key::B, .pressed = true});
+    run_one_frame(first);
+    run_one_frame(second);
+
+    CHECK(engine::input(first).key_pressed(engine::Key::B));
+    CHECK_FALSE(engine::input(second).key_pressed(engine::Key::B));
+    CHECK(first.world().resource<engine::Events<engine::KeyEvent>>().read().size() == 1U);
+    CHECK(second.world().resource<engine::Events<engine::KeyEvent>>().read().empty());
 }
 
 TEST_CASE("public engine headers do not leak private backend dependencies" *
