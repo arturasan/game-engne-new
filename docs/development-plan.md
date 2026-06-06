@@ -28,6 +28,12 @@ The Phase-0 bring-up risk is retired: the scaffold now has a working Fedora loop
 5. **The abstraction rule (no third-party types in public engine headers) is non-negotiable through M4.** If it slows down the renderer enough to hurt, file an ADR proposing a targeted exception — don't quietly violate it.
 6. **Agents work on the lowest-numbered unblocked spec by default.** Coordinate via the dependency DAG below before grabbing a higher-numbered one.
 
+### Concepts, specs, and examples
+
+Concept docs describe the target mental model. They are allowed to be ahead of current code because they explain where the engine is going, especially for agents learning the Bevy-style vocabulary. They do **not** authorize implementation outside the active spec.
+
+After core foundations, implemented features should normally be consumed by at least one runnable example before their milestone is considered integrated. Specs remain the implementation unit; examples validate API ergonomics, integration, and user-facing behavior.
+
 ---
 
 ## M0.5 — Bring-up (~0.5 wk, done)
@@ -101,6 +107,23 @@ Agent B track (logic): 0001 → 0003 → 0004 → 0007 → 0009 → 0012
 
 The two tracks join at 0008 (sprite) which is the first cross-track integration test.
 
+### Example-driven / spec-driven workflow
+
+Use this loop when a feature has a Bevy analogue or an example target:
+
+1. Select the roadmap milestone or example target.
+2. Inspect the equivalent pinned Bevy behavior, using `docs/references/bevy.md`.
+3. Explore our current code read-only.
+4. Identify the concrete capability gap.
+5. Harden the active spec without expanding past its stated scope.
+6. Record adopted semantics and intentional differences.
+7. Implement in a fresh bounded session.
+8. Review independently against the active spec and the Bevy references consulted.
+9. Run the adapted C++ example.
+10. Capture the requested artifact: console output, screenshot, video, golden file, or CI result.
+
+Do not implement future architecture text unless the active spec requires it. If the Bevy behavior suggests scope not present in the active spec, record it as an intentional difference or follow-up question; do not implement it.
+
 ### Per-spec workflow (the loop)
 
 ```
@@ -108,11 +131,13 @@ The two tracks join at 0008 (sprite) which is the first cross-track integration 
 2. Locate the roadmap milestone and confirm the active spec belongs to that milestone.
 3. Read the spec end to end. Read its Out-of-scope twice.
 4. Read the architecture chapter(s) it references.
-5. grep the engine for existing related code — there is more reuse than you think.
-6. Write public headers + tests FIRST. Implementation second.
-7. After every meaningful change: `cmake --workflow --preset check`.
-8. Before opening a PR, update the spec status, checklist, and PR link as described below.
-9. Address review. Merge. Update the spec file with a one-line note if reality deviated from plan.
+5. If behavior is uncertain, inspect the pinned Bevy docs/examples/source per `docs/references/bevy.md`.
+6. grep the engine for existing related code — there is more reuse than you think.
+7. Write public headers + tests FIRST. Implementation second.
+8. Add or update the smallest C++ example that consumes the feature when the spec calls for one.
+9. After every meaningful change: `cmake --workflow --preset check`.
+10. Before opening a PR, update the spec status, checklist, and PR link as described below.
+11. Address review. Merge. Update the spec file with a one-line note if reality deviated from plan.
 ```
 
 Do not implement future architecture text unless the active spec requires it.

@@ -4,6 +4,12 @@ Milestones are sized in **rough engineer-weeks** for an experienced C++ engineer
 
 Each milestone has a **demo gate** — a concrete runnable artifact that proves the milestone is done. No milestone closes without its demo.
 
+## Examples and demos policy
+
+Milestones should produce runnable or viewable artifacts. Specs remain the implementation units; examples validate API ergonomics and cross-system integration. Bevy examples are inspiration and semantic grounding, not a requirement to reproduce every Bevy feature.
+
+An M1 example map lives in `docs/examples/m1-example-plan.md`. M2 planning starts only after the M1 completion review; do not create M2 specs or move current M1 specs into M2 as part of example planning.
+
 ---
 
 ## M0 — Scaffolding *(done)*
