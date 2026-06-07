@@ -26,25 +26,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: install toolchain
+      - name: install required host development packages
         run: |
           dnf install -y \
-            gcc gcc-c++ clang clang-tools-extra llvm lld mold \
+            gcc gcc-c++ clang clang-tools-extra mold \
             cmake ninja-build sccache \
-            git python3 python3-pip pre-commit \
-            autoconf autoconf-archive automake libtool perl-core \
+            git python3 pre-commit \
+            autoconf autoconf-archive automake libtool perl perl-open \
             libX11-devel libXcursor-devel libXrandr-devel libXi-devel libXtst-devel \
             libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
             wayland-devel wayland-protocols-devel libxkbcommon-devel \
-            mesa-vulkan-drivers vulkan-loader-devel \
+            vulkan-loader-devel vulkan-tools \
             alsa-lib-devel pulseaudio-libs-devel \
-            pkgconf-pkg-config tar curl
+            pkgconf-pkg-config curl tar zip unzip
+
+      - name: install CI sanitizer and software-renderer extras
+        run: |
+          dnf install -y \
+            llvm \
+            mesa-vulkan-drivers
 
       - name: setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
 
-      - name: setup vcpkg
-        uses: lukka/run-vcpkg@v11
+      - name: bootstrap host-native repo state
+        run: |
+          ./tools/dev bootstrap
+          ./tools/dev bootstrap --check
 
       - name: configure
         env:

@@ -1,107 +1,152 @@
 # Fedora setup
 
-**This is the primary (only) supported platform through M4.** See `docs/adr/0002-fedora-primary-platform.md`.
+Fedora is the only supported development platform through M4. See
+`docs/adr/0002-fedora-primary-platform.md`.
 
-Target: Fedora 40+ host with a Fedora Rawhide toolbox for the GCC 16 / Clang 20
-toolchain until those compiler versions ship in a stable Fedora release.
-
-## Quick path — toolbox with GCC 16
-
-If your host Fedora has an older compiler and you want GCC 16 without disturbing
-the host:
+The supported M1 workflow is regular Fedora host-native development through the
+tracked CMake presets:
 
 ```sh
-# One-time
-sudo dnf install -y toolbox
-toolbox create --image registry.fedoraproject.org/fedora:rawhide engine
-toolbox enter engine
-# inside the toolbox, install GCC 16 + everything else (see "Required packages" below)
+cmake --preset linux-clang-asan
+cmake --build --preset linux-clang-asan
+ctest --preset linux-clang-asan
+cmake --workflow --preset check
 ```
 
-The toolbox shares your home directory, so the repo at `~/dev/projects/engine` is visible inside. Build artifacts in `build/` will be toolbox-specific — that's fine.
+`./tools/dev` is an optional thin convenience layer. Its bootstrap command
+verifies host tools, bootstraps repo-local vcpkg at `.cache/dev/vcpkg`,
+installs the repository pre-commit hook, and creates the root
+`compile_commands.json` symlink used by clangd editors.
 
-## Required packages
+## Required Host Development Packages
+
+The host must provide Fedora with these development tools and libraries for the
+normal configure/build/test loop. This list matches what
+`./tools/dev bootstrap --check` validates:
 
 ```sh
 sudo dnf install -y \
-    gcc gcc-c++ clang clang-tools-extra lld mold \
-    cmake ninja-build sccache \
-    git pre-commit \
-    python3 python3-pip \
-    autoconf autoconf-archive automake libtool perl-core \
-    libX11-devel libXcursor-devel libXrandr-devel libXi-devel libXtst-devel \
-    libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
-    mesa-vulkan-drivers vulkan-loader-devel vulkan-tools \
-    alsa-lib-devel pulseaudio-libs-devel \
-    pkgconf-pkg-config tar curl
+  gcc gcc-c++ clang clang-tools-extra mold \
+  cmake ninja-build sccache \
+  git python3 pre-commit \
+  autoconf autoconf-archive automake libtool perl perl-open \
+  libX11-devel libXcursor-devel libXrandr-devel libXi-devel libXtst-devel \
+  libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
+  wayland-devel wayland-protocols-devel libxkbcommon-devel \
+  vulkan-loader-devel vulkan-tools \
+  alsa-lib-devel pulseaudio-libs-devel \
+  pkgconf-pkg-config curl tar zip unzip
 ```
 
-**Verify compiler versions** — the engine requires **GCC 16+** and **Clang 20+** (ADR 0002):
+Minimum versions checked by `./tools/dev bootstrap`:
+
+- CMake 3.30, from `cmake_minimum_required(VERSION 3.30)`;
+- Ninja 1.12, from the documented Fedora build baseline;
+- GCC/G++ 16, from ADR 0002's compiler floor;
+- Clang/Clang++/clangd 20, from ADR 0002's compiler floor.
+
+Bootstrap detects missing host tools and development-library `pkg-config`
+modules, including SDL's X11/Wayland, OpenGL/EGL, audio, and Vulkan development
+modules. It does not run `sudo`, install packages, install GPU drivers, modify
+shell profiles, create Toolbx containers, or change CLion settings.
+
+## Optional Local ASan/Slow Renderer Parity Packages
+
+These packages are useful when reproducing CI's sanitizer and software-renderer
+validation locally, but the default bootstrap does not require them:
 
 ```sh
-g++ --version       # must report 16.x
-clang++ --version   # must report 20.x
-cmake --version     # must be 3.30+
-ninja --version     # must be 1.12+
+sudo dnf install -y \
+  llvm \
+  mesa-vulkan-drivers
 ```
 
-If GCC 16 isn't available in your Fedora release, use the toolbox path above or build GCC 16 from source under `~/opt/gcc16` and set `CC` / `CXX` in your shell rc.
+- `llvm` provides `llvm-symbolizer` for clearer ASan/UBSan reports.
+- `mesa-vulkan-drivers` provides lavapipe for software Vulkan rendering.
 
-## vcpkg
+## Bootstrap
+
+From the repository checkout:
 
 ```sh
-git clone --depth 1 https://github.com/microsoft/vcpkg ~/vcpkg
-~/vcpkg/bootstrap-vcpkg.sh -disableMetrics
-echo 'export VCPKG_ROOT=$HOME/vcpkg' >> ~/.bashrc
-echo 'export CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake' >> ~/.bashrc
-source ~/.bashrc
+./tools/dev bootstrap --check   # read-only validation
+./tools/dev bootstrap           # create or repair repo-local generated state
 ```
 
-## First build
+Generated local files are ignored and regenerable:
+
+- `.cache/dev/vcpkg`;
+- `compile_commands.json`;
+- `.git/hooks/pre-commit`.
+
+Do not add `VCPKG_ROOT` or `CMAKE_TOOLCHAIN_FILE` to shell startup files. The
+tracked CMake presets use:
+
+```text
+${sourceDir}/.cache/dev/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+## Build and test
+
+The standard presets work without `VCPKG_ROOT`:
 
 ```sh
-cd ~/dev/projects/engine
-pre-commit install                       # clang-format/tidy/codespell/commitlint hooks
-cmake --preset linux-clang-asan
-cmake --build --preset linux-clang-asan
-ctest --preset linux-clang-asan          # only [fast] tests
-./build/linux-clang-asan/Debug/examples/hello_window/hello_window
+env -u VCPKG_ROOT cmake --preset linux-clang-asan
+env -u VCPKG_ROOT cmake --preset linux-gcc-rel
+env -u VCPKG_ROOT cmake --workflow --preset check
 ```
 
-Expected: tests pass, `hello_window` prints `frame 0` through `frame 4`.
-
-The fast inner loop:
-
-```sh
-cmake --workflow --preset check          # configure + build + [fast] tests, ~10s incremental
-```
-
-## Editor / clangd setup
-
-The `linux-clang-asan` preset exports a compile database for clangd. After the first successful workflow run, link it at the repo root and restart your editor or clangd:
+The fast inner loop remains:
 
 ```sh
 cmake --workflow --preset check
-ln -sfn build/linux-clang-asan/compile_commands.json compile_commands.json
 ```
 
-## Headless rendering (CI parity)
+## Editor setup
 
-Screenshot tests pin to the **llvmpipe** software rasterizer for bit-stable output across machines:
+clangd-based editors consume the generated root symlink:
+
+```text
+compile_commands.json -> build/linux-clang-asan/compile_commands.json
+```
+
+Run `./tools/dev bootstrap`, then configure `linux-clang-asan` once before
+expecting the symlink target to exist. Zed, VS Code, and other clangd editors
+can use the repository root normally after that.
+
+CLion is host-native and optional. Open the project normally from the installed
+CLion desktop entry or JetBrains Toolbox. Use the tracked CMake presets inside
+CLion; no generated wrapper, generated desktop launcher, shell-profile
+environment injection, or committed `.idea` state is part of the daily path.
+
+## Optional Toolbx parity
+
+Toolbx may still be useful for clean-room or CI-parity experiments, but it is
+not part of the daily development contract and `./tools/dev bootstrap` does not
+create or require a Toolbx container.
+
+## Rendering smoke path
+
+For software Vulkan rendering parity with CI, use lavapipe:
 
 ```sh
-sudo dnf install -y mesa-vulkan-drivers vulkan-tools
 export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
-vulkaninfo --summary | head -20          # should show llvmpipe device
+export SDL_GPU_DRIVER=vulkan
+export LIBGL_ALWAYS_SOFTWARE=1
+export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
 ```
 
-`ENGINE_HEADLESS=1` together with these env vars is what CI uses. Don't run screenshot tests against your real GPU — goldens won't match.
+`hello_window` is platform-only in M1 and is not expected to present a visible
+Wayland surface until a renderer commits a buffer.
 
 ## Troubleshooting
 
-- **`cmake: command not found`:** Fedora 40 ships 3.28. Use the toolbox image (Fedora 41 has 3.30) or `pip install --user 'cmake>=3.30'` and add `~/.local/bin` to `PATH`.
-- **GCC < 16:** see toolbox path above. Do not try to make a GCC 15 build pass — ADR 0002 raises the floor for a reason.
-- **vcpkg first-build is slow:** confirm `sccache` is on `PATH` and `CMAKE_CXX_COMPILER_LAUNCHER=sccache` is set by the preset. Cold first configure (SDL3 + SDL3 GPU + spdlog + glm + miniaudio) ~3–6 min; subsequent rebuilds ~30s cached.
-- **`mold: undefined reference`:** confirm `CMAKE_LINKER_TYPE=MOLD` is the preset's value (it is). If your distro's `mold` is older than 2.30, install from Mold's release page.
-- **Permission denied writing to `~/vcpkg`:** clone to your home dir, not `/opt` or `/usr/local`.
-- **GitHub Actions container fails on dnf install:** check the CI file — it pins `fedora:rawhide`. Update both the workflow and this doc together if you bump.
+- Missing host package: install the reported Fedora package, then rerun
+  `./tools/dev bootstrap --check`.
+- Broken vcpkg checkout: remove `.cache/dev/vcpkg` only after confirming no
+  local work exists there, then rerun `./tools/dev bootstrap`.
+- Stale CMake cache: remove the affected generated build directory, such as
+  `build/linux-clang-asan`, and configure again.
+- Broken clangd includes: confirm `compile_commands.json` points to
+  `build/linux-clang-asan/compile_commands.json`, then configure
+  `linux-clang-asan`.
