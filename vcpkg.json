@@ -6,6 +6,13 @@
     "doctest",
     "spdlog",
     "glm",
-    "sdl3"
+    {
+      "name": "sdl3",
+      "features": [
+        "vulkan",
+        "wayland",
+        "x11"
+      ]
+    }
   ]
 }

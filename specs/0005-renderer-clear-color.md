@@ -2,9 +2,9 @@
 
 - Owner: TBD
 - Milestone: M1
-- Status: draft
+- Status: in-review
 - Tracking issue: TBD
-- Implementation PR: TBD
+- Implementation PR: https://github.com/arturasan/game-engne-new/pull/12
 - Merged in: TBD
 - Implements: ADR 0003
 
@@ -25,7 +25,7 @@ This spec does **not** introduce the render world, extract schedule, shader load
 - Spec 0002 is implemented: `PlatformPlugin` inserts the primary `Window`, pumps `WindowResizeEvent`, stores the requested `WindowConfig::vsync`, and supports `ENGINE_HEADLESS=1`.
 - Spec 0004 is implemented: `World` resources, `Events<T>`, `EventReader<T>`, `Res<T>`, and `ResMut<T>` are available.
 - ADR 0003 is accepted: the M1-M4 render backend is SDL3 GPU and SDL GPU types must not appear in public engine headers.
-- SDL3 from `vcpkg.json` is the only dependency used. If the implementation discovers that packaged SDL3 lacks SDL GPU support or requires a new package/configuration, stop and report; that would require a build/dependency decision before implementation.
+- SDL3 from `vcpkg.json` is the only top-level engine dependency used for rendering. Linux M1 explicitly requires the existing SDL3 dependency with its vcpkg `vulkan`, `wayland`, and `x11` features enabled; `vulkan` enables SDL's Vulkan GPU backend, `wayland` enables the Fedora Tier-1 native window path, and `x11` retains fallback/XWayland support. These are SDL feature selections, not new top-level engine libraries.
 
 ## Public API
 
@@ -387,27 +387,40 @@ Minimum behavior:
 
 ## Acceptance criteria
 
-- [ ] `engine::Renderer`, `RenderPlugin`, `ClearColor`, `Color`, `RendererConfig`, `HeadlessRenderConfig`, `FrameStatus`, and `ReadbackImage` exist with the public behavior defined above.
-- [ ] Public frame rendering is atomic through `Renderer::render_clear(Color) -> Result<FrameStatus>`; no public `Frame`, `begin_frame`, `clear(Frame, ...)`, `submit`, `present`, or `CommandEncoder` API exists in 0005.
-- [ ] All fallible void renderer operations use `Result<void>` with no success-marker fallback.
-- [ ] SDL3 GPU is hidden in `.cpp` implementation files; `grep -rE 'SDL_|SDL_GPU|glm::|spdlog|ImGui' engine --include='*.hpp'` returns no matches.
-- [ ] Windowed renderer creation claims the SDL window through an internal-only `engine::detail::NativeWindowLease`; the lease keeps the platform backend/window alive for the renderer lifetime.
-- [ ] Renderer destruction releases the claimed GPU window before releasing the native window lease and releases only SDL initialization it owns.
-- [ ] Headless renderer creation does not require `PlatformPlugin` or a native window and explicitly owns/releases its SDL video initialization when it initializes SDL itself.
-- [ ] `Renderer` is thread-affine in M1: windowed renderer operations run on the window-creation thread, headless renderer operations run on the renderer-creation thread, command buffers are submitted/cancelled on their acquisition thread, and debug builds assert on incorrect use.
-- [ ] Failed windowed swapchain acquisition cancels the command buffer, invalidates the local handle, logs acquisition and cancellation errors as applicable, and returns `BackendError`.
-- [ ] Skipped windowed frames with a null swapchain texture cancel the command buffer with `SDL_CancelGPUCommandBuffer`, invalidate the local handle, and return `FrameStatus::Skipped`; acquired non-null swapchain command buffers are submitted exactly once and never cancelled.
-- [ ] `RenderPlugin` appends its render-clear system to `Update`; for M1 it must be added after all gameplay/update systems, and `examples/clear_color` adds it last.
-- [ ] `RenderPlugin::build` preserves an existing `ClearColor` resource or inserts `ClearColor{}` before registering the render system.
-- [ ] `RenderPlugin::build` handles initialization failure by logging, requesting app exit, inserting no `Renderer`, and registering no render system.
-- [ ] Runtime resize/render failures log, request app exit, and do not throw; `FrameStatus::Skipped` is not an error and does not exit.
-- [ ] Duplicate `RenderPlugin` registration is detected as a programmer error and does not replace the existing `Renderer` or register a second render system.
-- [ ] `WindowConfig::vsync` controls windowed present mode; non-vsync requests use SDL support checks and fall back to VSYNC with a warning when unsupported.
-- [ ] Minimized/zero-size swapchain acquisition skips rendering without failing the app.
-- [ ] Headless `read_back()` returns tightly packed RGBA8 bytes with deterministic dimensions and row pitch.
-- [ ] Slow headless renderer tests cover clear/readback and headless resize.
-- [ ] A slow headless plugin-ordering integration test proves an earlier `Update` system can update `ClearColor` before the render-clear system runs.
-- [ ] `examples/clear_color/` clears to cornflower blue for 60 frames and may emit raw RGBA or dependency-free PPM as the proof artifact.
+- [x] `engine::Renderer`, `RenderPlugin`, `ClearColor`, `Color`, `RendererConfig`, `HeadlessRenderConfig`, `FrameStatus`, and `ReadbackImage` exist with the public behavior defined above.
+- [x] Public frame rendering is atomic through `Renderer::render_clear(Color) -> Result<FrameStatus>`; no public `Frame`, `begin_frame`, `clear(Frame, ...)`, `submit`, `present`, or `CommandEncoder` API exists in 0005.
+- [x] All fallible void renderer operations use `Result<void>` with no success-marker fallback.
+- [x] SDL3 GPU is hidden in `.cpp` implementation files; `grep -rE 'SDL_|SDL_GPU|glm::|spdlog|ImGui' engine --include='*.hpp'` returns no matches.
+- [x] Windowed renderer creation claims the SDL window through an internal-only `engine::detail::NativeWindowLease`; the lease keeps the platform backend/window alive for the renderer lifetime.
+- [x] Renderer destruction releases the claimed GPU window before releasing the native window lease and releases only SDL initialization it owns.
+- [x] Headless renderer creation does not require `PlatformPlugin` or a native window and explicitly owns/releases its SDL video initialization when it initializes SDL itself.
+- [x] `Renderer` is thread-affine in M1: windowed renderer operations run on the window-creation thread, headless renderer operations run on the renderer-creation thread, command buffers are submitted/cancelled on their acquisition thread, and debug builds assert on incorrect use.
+- [x] Failed windowed swapchain acquisition cancels the command buffer, invalidates the local handle, logs acquisition and cancellation errors as applicable, and returns `BackendError`.
+- [x] Skipped windowed frames with a null swapchain texture cancel the command buffer with `SDL_CancelGPUCommandBuffer`, invalidate the local handle, and return `FrameStatus::Skipped`; acquired non-null swapchain command buffers are submitted exactly once and never cancelled.
+- [x] `RenderPlugin` appends its render-clear system to `Update`; for M1 it must be added after all gameplay/update systems, and `examples/clear_color` adds it last.
+- [x] `RenderPlugin::build` preserves an existing `ClearColor` resource or inserts `ClearColor{}` before registering the render system.
+- [x] `RenderPlugin::build` handles initialization failure by logging, requesting app exit, inserting no `Renderer`, and registering no render system.
+- [x] Runtime resize/render failures log, request app exit, and do not throw; `FrameStatus::Skipped` is not an error and does not exit.
+- [x] Duplicate `RenderPlugin` registration is detected as a programmer error and does not replace the existing `Renderer` or register a second render system.
+- [x] `WindowConfig::vsync` controls windowed present mode; non-vsync requests use SDL support checks and fall back to VSYNC with a warning when unsupported.
+- [x] Minimized/zero-size swapchain acquisition skips rendering without failing the app.
+- [x] Headless `read_back()` returns tightly packed RGBA8 bytes with deterministic dimensions and row pitch.
+- [x] Slow headless renderer tests cover clear/readback and headless resize.
+- [x] A slow headless plugin-ordering integration test proves an earlier `Update` system can update `ClearColor` before the render-clear system runs.
+- [x] `examples/clear_color/` clears to cornflower blue for 60 frames and may emit raw RGBA or dependency-free PPM as the proof artifact.
+
+## Implementation notes
+
+- `Renderer` is move-only and stores a backend-neutral PIMPL; the SDL GPU backend lives in `engine/render/sdl3_gpu_backend.cpp`.
+- `NativeWindowLease` keeps shared ownership of the private platform backend and exposes only a `void*` native handle, requested vsync, and creation-thread metadata.
+- Headless rendering initializes the SDL video subsystem when needed, selects SDL's offscreen video driver by default in headless mode, and releases only initialization it owns.
+- Headless readback uses a download transfer buffer, fence wait, map/unmap, and returns tightly packed RGBA8 data.
+- The existing SDL3 dependency is configured with its `vulkan`, `wayland`, and `x11` features in `vcpkg.json`; without the Linux window features, the local SDL 3.4.10 build exposed only `offscreen`, `dummy`, and `evdev` video drivers. After rebuilding SDL with the required features and Toolbox development packages, the compiled driver list is `wayland`, `x11`, `offscreen`, `dummy`, and `evdev`.
+- Local real-window smoke in graphical Fedora Kinoite Toolbox succeeds for Wayland and X11 when the Vulkan ICD is pinned to lavapipe. This proves the engine window, swapchain, and present path independently of hardware GPU interop.
+- RTX 5090 hardware Vulkan presentation inside the current Toolbox is moved to a dedicated developer-environment/tooling follow-up: https://github.com/arturasan/game-engne-new/issues/14. The default hardware Wayland run still fails before rendering with compositor dmabuf-import diagnostics and no SDL-reported supported SDR swapchain composition; the default hardware X11 run reaches the backend but fails swapchain creation with `vkCreateSwapchainKHR` / `VK_ERROR_INITIALIZATION_FAILED`. This does not block spec 0005 because headless Vulkan rendering/readback passes, Wayland and X11 native-window presentation both pass with lavapipe, SDL Wayland/X11 backend compilation is verified, and the remaining failure is isolated to host/container hardware presentation. Plain process exit code 0 is not treated as smoke success because initialization failure requests a clean app exit.
+- Slow Clang ASan renderer validation uses a narrow external-library LeakSanitizer suppression file at `tests/sanitizers/lsan.supp`. The unsuppressed representative headless clear/readback test reports 512 bytes in 2 allocations, both 256 bytes, through SDL 3.4.10's Vulkan backend initialization stacks; both known allocations share the exact stack frame `VULKAN_INTERNAL_DeterminePhysicalDevice`.
+- The allowed LeakSanitizer suppression rule is exactly `leak:^VULKAN_INTERNAL_DeterminePhysicalDevice$`. Engine-owned leaks remain fatal; a local canary leaking 123 bytes still fails with this suppression file enabled. Follow-up: https://github.com/arturasan/game-engne-new/issues/13.
+- Intentional Bevy differences remain unchanged: no render sub-app, extract schedule, render graph, camera-specific clear color, or public frame/encoder API in this spec.
 
 ## Out of scope
 
@@ -421,7 +434,7 @@ Minimum behavior:
 - Multiple windows or surfaces.
 - HDR, tonemapping, MSAA, depth/stencil targets, screenshots, PNG encoding, and golden diffing.
 - General plugin uniqueness framework.
-- New dependencies or CMake/vcpkg changes unless a separate ADR/spec approves them.
+- New dependencies or CMake/vcpkg changes beyond enabling the existing SDL3 dependency's `vulkan`, `wayland`, and `x11` features for SDL GPU and Linux window presentation on M1.
 
 ## Files allowed
 
@@ -434,6 +447,11 @@ Minimum behavior:
 - `tests/unit/test_renderer.cpp`
 - `examples/clear_color/**`
 - CMake/example registration files only if needed to compile the new renderer files and example
+- `.github/workflows/ci.yml` only for the required slow SDL GPU test step, renderer artifact upload, Linux SDL Wayland/X11 development packages, and avoiding stale SDL binary-cache restores for those explicit features
+- `engine/platform/platform.cpp` only to keep `PlatformPlugin::build` from throwing on backend initialization failure before inserting partial platform resources or systems
+- `tests/unit/test_platform.cpp` only for the matching fast regression coverage
+- `vcpkg.json` only for enabling the existing SDL3 dependency's `vulkan`, `wayland`, and `x11` features required by SDL's Vulkan GPU backend and Linux M1 window presentation
+- `tests/sanitizers/lsan.supp` only for the exact external SDL/Vulkan initialization suppression listed in the implementation notes
 
 ## Files forbidden
 

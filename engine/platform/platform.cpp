@@ -1,9 +1,11 @@
 #include "engine/platform/platform.hpp"
 
 #include <cassert>
+#include <exception>
 #include <utility>
 #include <vector>
 
+#include "engine/core/log.hpp"
 #include "engine/ecs/events.hpp"
 #include "engine/platform/detail/window_backend.hpp"
 
@@ -52,7 +54,16 @@ void apply_event(World& world, const WindowCloseRequested& event) {
 } // namespace
 
 void PlatformPlugin::build(App& app) const {
-    app.world().insert_resource(Window(config));
+    Window created_window;
+    try {
+        created_window = Window(config);
+    } catch (const std::exception& exception) {
+        log::error("platform initialization failed: {}", exception.what());
+        app.request_exit();
+        return;
+    }
+
+    app.world().insert_resource(std::move(created_window));
     app.world().insert_resource(Input{});
     app.add_event<KeyEvent>();
     app.add_event<MouseButtonEvent>();

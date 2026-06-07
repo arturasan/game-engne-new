@@ -4,12 +4,37 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <string>
 
 #include "engine/core/app.hpp"
 #include "engine/platform/platform.hpp"
 
 namespace {
+
+class EnvVarGuard {
+public:
+    explicit EnvVarGuard(const char* name) : name_(name) {
+        if (const char* value = std::getenv(name_); value != nullptr) {
+            original_ = value;
+        }
+    }
+
+    ~EnvVarGuard() {
+        if (original_.has_value()) {
+            static_cast<void>(::setenv(name_, original_->c_str(), 1));
+        } else {
+            static_cast<void>(::unsetenv(name_));
+        }
+    }
+
+    EnvVarGuard(const EnvVarGuard&) = delete;
+    EnvVarGuard& operator=(const EnvVarGuard&) = delete;
+
+private:
+    const char* name_;
+    std::optional<std::string> original_;
+};
 
 void enable_headless() {
     REQUIRE(::setenv("ENGINE_HEADLESS", "1", 1) == 0);
@@ -72,6 +97,27 @@ TEST_CASE("PlatformPlugin registers resources and typed event channels" *
     CHECK(app.world().try_resource<engine::Events<engine::MouseWheelEvent>>() != nullptr);
     CHECK(app.world().try_resource<engine::Events<engine::WindowResizeEvent>>() != nullptr);
     CHECK(app.world().try_resource<engine::Events<engine::WindowCloseRequested>>() != nullptr);
+}
+
+TEST_CASE("PlatformPlugin handles window initialization failure without partial attach" *
+          doctest::test_suite("fast")) {
+    EnvVarGuard headless{"ENGINE_HEADLESS"};
+    EnvVarGuard video_driver{"SDL_VIDEO_DRIVER"};
+    EnvVarGuard legacy_video_driver{"SDL_VIDEODRIVER"};
+    REQUIRE(::unsetenv("ENGINE_HEADLESS") == 0);
+    REQUIRE(::setenv("SDL_VIDEO_DRIVER", "engine_invalid_video_driver", 1) == 0);
+    REQUIRE(::unsetenv("SDL_VIDEODRIVER") == 0);
+
+    engine::App app;
+
+    CHECK_NOTHROW(app.add_plugin(engine::PlatformPlugin{}));
+    CHECK_FALSE(engine::platform_attached(app));
+    CHECK(app.world().try_resource<engine::Window>() == nullptr);
+    CHECK(app.world().try_resource<engine::Input>() == nullptr);
+    CHECK(app.world().try_resource<engine::Events<engine::KeyEvent>>() == nullptr);
+    CHECK(app.first().size() == 0U);
+    CHECK(app.run() == 0);
+    CHECK(app.frame() == 0U);
 }
 
 TEST_CASE("headless key events update input and typed events in update systems" *

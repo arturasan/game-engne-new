@@ -1,1 +1,2 @@
+add_subdirectory(clear_color)
 add_subdirectory(hello_window)

@@ -14,6 +14,19 @@ namespace {
 
 } // namespace
 
+namespace detail {
+
+NativeWindowLease WindowAccess::acquire_native_lease(Window& window) noexcept {
+    if (window.backend_ == nullptr) {
+        return {};
+    }
+    return NativeWindowLease{window.backend_, window.backend_->native_handle(),
+                             window.backend_->vsync_requested(),
+                             window.backend_->creation_thread()};
+}
+
+} // namespace detail
+
 Window::Window() = default;
 
 Window::Window(WindowConfig config)

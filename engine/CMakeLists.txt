@@ -25,6 +25,8 @@ target_sources(engine
         platform/input.cpp
         platform/platform.cpp
         platform/window.cpp
+        render/renderer.cpp
+        render/sdl3_gpu_backend.cpp
 )
 
 target_link_libraries(engine PRIVATE SDL3::SDL3 spdlog::spdlog)
@@ -48,4 +50,6 @@ target_sources(engine
         platform/types.hpp
         platform/window.hpp
         platform/detail/window_backend.hpp
+        render/renderer.hpp
+        render/detail/renderer_backend.hpp
 )
