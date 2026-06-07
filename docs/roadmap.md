@@ -32,7 +32,7 @@ The Phase-0 scaffold now builds and tests on the Fedora path. The historical che
 
 The smallest possible end-to-end engine: open a window, run an ECS world, render a sprite, play a sound, exit cleanly. Everything an agent needs to verify "the engine works" by looking at pixels and listening to a beep.
 
-Current specs in `specs/` are M1 backlog unless their metadata marks them `deferred` or sets `Milestone: Future`. Spec `0013` exists because commands were split out of `0004` after resources/events merged; it remains M1 backlog so M2 scheduler planning starts from a clean deferred-mutation contract.
+Current specs in `specs/` are M1 backlog unless their metadata marks them `deferred` or sets `Milestone: Future`. Spec `0013` exists because commands were split out of `0004` after resources/events merged; it remains M1 backlog so M2 scheduler planning starts from a clean deferred-mutation contract. Specs `0014` and `0015` are M1 enabling infrastructure discovered by renderer work. For the single-agent workflow, `0014` is the immediate execution gate after `0005`, `0015` follows `0014`, and ordinary feature work resumes after these tooling gates. Neither spec adds an engine runtime dependency edge in the dependency DAG.
 
 | Spec | Title | Status | Sizing |
 |---|---|---|---|
@@ -40,7 +40,7 @@ Current specs in `specs/` are M1 backlog unless their metadata marks them `defer
 | 0002 | Platform: Window + Input (SDL3 hidden) | implemented | 0.5 wk |
 | 0003 | Logging + structured JSON sink | implemented | 0.3 wk |
 | 0004 | Resources + Events | implemented | 0.5 wk |
-| 0005 | Renderer abstraction — clear color (SDL3 GPU hidden, ADR 0003) | draft | 1 wk |
+| 0005 | Renderer abstraction — clear color (SDL3 GPU hidden, ADR 0003) | implemented | 1 wk |
 | 0006 | Transform + Camera2d/Camera3d | draft | 0.3 wk |
 | 0007 | Asset system v0 (Handle, synchronous loader) | draft | 0.7 wk |
 | 0008 | Sprite plugin — first sprite on screen | draft | 0.7 wk |
@@ -49,6 +49,8 @@ Current specs in `specs/` are M1 backlog unless their metadata marks them `defer
 | 0011 | PBR mesh plugin — first lit cube (3D) | draft | 1 wk |
 | 0012 | Audio v0 — play a wav | draft | 0.3 wk |
 | 0013 | Commands: deferred world mutation | draft | TBD |
+| 0014 | Developer environment and IDE bootstrap | draft | 1.0 wk |
+| 0015 | Environment diagnostics and launch tooling | draft | 0.7 wk |
 
 **Demo gate:** `examples/sprite_demo` renders a sprite with input-driven movement; `examples/pbr_demo` renders a lit rotating cube; `examples/audio_demo` plays a beep on keypress. All three examples produce stable screenshot/replay outputs in CI.
 
@@ -70,7 +72,9 @@ Current specs in `specs/` are M1 backlog unless their metadata marks them `defer
                                   0012 Audio ────────────────────────────┘
 ```
 
-Specs 0001, 0002, 0003, 0007 are **leaves** (no deps) — work on them in parallel if multiple agents are available. Specs 0001 through 0004 are now implemented, so the lowest-numbered draft spec is 0005.
+Specs 0001, 0002, 0003, 0007 are **leaves** (no deps) — work on them in parallel if multiple agents are available. Specs 0001 through 0005 are now implemented. For single-agent execution, specs 0014 and 0015 temporarily gate spec 0006 because renderer work exposed a broken development loop. For dependency-graph planning, 0014 and 0015 are tooling infrastructure and do not add engine runtime dependency edges.
+
+M1 demo evidence should include the normal runtime artifacts plus 0015 diagnostic evidence: a diagnostic bundle and a reproducible `./tools/dev run ...` command that proves the selected rendering mode.
 
 ---
 

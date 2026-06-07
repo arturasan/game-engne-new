@@ -15,7 +15,7 @@ If you are an agent picking up work, read this **after** `AGENTS.md` and **befor
 | M1  — Playable engine core | **active** | Current specs are M1 backlog unless their metadata marks them deferred or `Milestone: Future` |
 | M2–M6 | future | roadmap only; M2 planning starts only after the M1 completion review |
 
-The Phase-0 bring-up risk is retired: the scaffold now has a working Fedora loop via `cmake --workflow --preset check`. Future agents should keep that command green before starting feature work.
+The Phase-0 bring-up risk is retired: the scaffold now has a working Fedora loop via `cmake --workflow --preset check`. Renderer spec 0005 is also implemented, but it exposed development-environment drift between the working Toolbx CLI and desktop CLion. Specs 0014 and 0015 temporarily repair that loop before ordinary M1 feature work resumes.
 
 ---
 
@@ -88,6 +88,8 @@ After core foundations, implemented features should normally be consumed by at l
 0002 Window+Input       (0.5 wk)
 0004 Resources/Events   (0.5 wk)
 0005 Renderer           (1.0 wk)
+0014 Developer environment/bootstrap (1.0 wk) — repairs bootstrap and desktop IDE loop
+0015 Diagnostics/launch tooling      (0.7 wk) — repairs doctor, bundles, and smoke-run loop
 0006 Transform/Camera   (0.3 wk)
 0007 Assets             (0.7 wk)
 0008 Sprite plugin      (0.7 wk)  — first visible artifact (PR demo!)
@@ -98,7 +100,9 @@ After core foundations, implemented features should normally be consumed by at l
 0013 Commands           (TBD)     — M1 backlog; prepares M2 scheduler work
 ```
 
-Total before spec 0013 was 7.8 weeks of sequential work for one experienced engineer with an AI agent. Spec 0013 needs sizing during M1 execution. Halve roughly for two engineers working independent paths through the DAG.
+Specs 0014 and 0015 temporarily override the "lowest-numbered unblocked spec" convention because renderer work exposed tooling failures that make the normal feature loop unreliable. They do not add engine runtime dependency edges, and each remains one spec = one PR.
+
+Total before specs 0013/0014/0015 was 7.8 weeks of sequential work for one experienced engineer with an AI agent. Spec 0013 needs sizing during M1 execution; spec 0014 is sized at 1.0 week and spec 0015 is sized at 0.7 week after splitting the original tooling contract at the bootstrap-versus-diagnostics boundary. Halve roughly for two engineers working independent paths through the DAG.
 
 ### Suggested ordering for two agents in parallel
 
@@ -123,6 +127,26 @@ Use this loop when a feature has a Bevy analogue or an example target:
 10. Capture the requested artifact: console output, screenshot, video, golden file, or CI result.
 
 Do not implement future architecture text unless the active spec requires it. If the Bevy behavior suggests scope not present in the active spec, record it as an intentional difference or follow-up question; do not implement it.
+
+### Tooling loop
+
+During spec 0014:
+
+1. Run `./tools/dev bootstrap --check`.
+2. Run bootstrap if required.
+3. Configure the intended CMake preset.
+4. Build and test.
+5. Validate the desktop CLion feasibility and clean-room acceptance.
+6. Use the minimal bootstrap report on failure.
+
+After spec 0015 is implemented:
+
+1. Run `./tools/dev doctor`.
+2. Configure, build, and test.
+3. Run the target in an explicit mode.
+4. Collect a diagnostic bundle on failure.
+
+For tooling specs, normal desktop IDE startup is part of the definition of done. A terminal-only IDE launch command is not enough.
 
 ### Per-spec workflow (the loop)
 
