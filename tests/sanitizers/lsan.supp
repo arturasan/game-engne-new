@@ -1,0 +1,4 @@
+# SDL 3.4.10 Vulkan backend process-lifetime initialization allocations.
+# Both known 256-byte allocations share this exact stack frame.
+# Re-evaluate when SDL3, Vulkan loader, or Mesa/llvmpipe is updated.
+leak:^VULKAN_INTERNAL_DeterminePhysicalDevice$

@@ -6,6 +6,7 @@ add_executable(engine_tests
     unit/test_events.cpp
     unit/test_log.cpp
     unit/test_platform.cpp
+    unit/test_renderer.cpp
     unit/test_resources.cpp
     unit/test_result.cpp
 )

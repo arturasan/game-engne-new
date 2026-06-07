@@ -29,12 +29,13 @@ jobs:
       - name: install toolchain
         run: |
           dnf install -y \
-            gcc gcc-c++ clang clang-tools-extra lld mold \
+            gcc gcc-c++ clang clang-tools-extra llvm lld mold \
             cmake ninja-build sccache \
             git python3 python3-pip pre-commit \
             autoconf autoconf-archive automake libtool perl-core \
             libX11-devel libXcursor-devel libXrandr-devel libXi-devel libXtst-devel \
             libXinerama-devel mesa-libGL-devel mesa-libEGL-devel \
+            wayland-devel wayland-protocols-devel libxkbcommon-devel \
             mesa-vulkan-drivers vulkan-loader-devel \
             alsa-lib-devel pulseaudio-libs-devel \
             pkgconf-pkg-config tar curl
@@ -46,6 +47,8 @@ jobs:
         uses: lukka/run-vcpkg@v11
 
       - name: configure
+        env:
+          VCPKG_BINARY_SOURCES: clear
         run: cmake --preset ${{ matrix.preset }}
 
       - name: build
@@ -54,9 +57,37 @@ jobs:
       - name: test
         run: ctest --preset ${{ matrix.preset }} --output-on-failure --output-junit junit.xml
 
+      - name: slow renderer validation
+        if: matrix.preset == 'linux-clang-asan'
+        env:
+          ENGINE_HEADLESS: "1"
+          SDL_GPU_DRIVER: vulkan
+          VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          MESA_LOADER_DRIVER_OVERRIDE: llvmpipe
+        run: |
+          test -s tests/sanitizers/lsan.supp
+          export ASAN_SYMBOLIZER_PATH="$(command -v llvm-symbolizer)"
+          export LSAN_OPTIONS="suppressions=$PWD/tests/sanitizers/lsan.supp:print_suppressions=1"
+          ctest --test-dir build/linux-clang-asan \
+            -C Debug \
+            -L slow \
+            --output-on-failure \
+            --verbose
+          ./build/linux-clang-asan/Debug/examples/clear_color/clear_color
+          test -s build/test-output/clear_color_frame_5.ppm
+
       - name: upload test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: junit-${{ matrix.preset }}
           path: build/${{ matrix.preset }}/junit.xml
+
+      - name: upload renderer artifact
+        if: matrix.preset == 'linux-clang-asan'
+        uses: actions/upload-artifact@v4
+        with:
+          name: renderer-proof-${{ matrix.preset }}
+          path: build/test-output/
+          if-no-files-found: error
