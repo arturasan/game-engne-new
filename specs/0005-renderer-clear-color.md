@@ -2,10 +2,10 @@
 
 - Owner: TBD
 - Milestone: M1
-- Status: in-review
+- Status: implemented
 - Tracking issue: TBD
 - Implementation PR: https://github.com/arturasan/game-engne-new/pull/12
-- Merged in: TBD
+- Merged in: PR #12, merge commit 0038d9d4cce8ecbf28f88c41d12c23d01e902d86
 - Implements: ADR 0003
 
 ## Scope
@@ -421,6 +421,7 @@ Minimum behavior:
 - Slow Clang ASan renderer validation uses a narrow external-library LeakSanitizer suppression file at `tests/sanitizers/lsan.supp`. The unsuppressed representative headless clear/readback test reports 512 bytes in 2 allocations, both 256 bytes, through SDL 3.4.10's Vulkan backend initialization stacks; both known allocations share the exact stack frame `VULKAN_INTERNAL_DeterminePhysicalDevice`.
 - The allowed LeakSanitizer suppression rule is exactly `leak:^VULKAN_INTERNAL_DeterminePhysicalDevice$`. Engine-owned leaks remain fatal; a local canary leaking 123 bytes still fails with this suppression file enabled. Follow-up: https://github.com/arturasan/game-engne-new/issues/13.
 - Intentional Bevy differences remain unchanged: no render sub-app, extract schedule, render graph, camera-specific clear color, or public frame/encoder API in this spec.
+- Final implementation result: PR #12 merged successfully; local `cmake --workflow --preset check` passed with 52/52 fast tests after merging; slow GPU validation and the renderer artifact passed in CI; native Wayland/X11 presentation was validated with lavapipe; RTX 5090 hardware presentation in Toolbox remains tracked by https://github.com/arturasan/game-engne-new/issues/14.
 
 ## Out of scope
 
