@@ -21,3 +21,9 @@ else()
     add_test(NAME engine_tests COMMAND engine_tests)
     set_tests_properties(engine_tests PROPERTIES LABELS "fast")
 endif()
+
+add_test(
+    NAME tooling_host_native_bootstrap
+    COMMAND bash "${CMAKE_SOURCE_DIR}/tests/tooling/bootstrap_feasibility_test.sh" "${CMAKE_SOURCE_DIR}"
+)
+set_tests_properties(tooling_host_native_bootstrap PROPERTIES LABELS "fast")

@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+script_path="$(realpath "$0")"
+script_dir="$(dirname "$script_path")"
+repo_root="$(realpath "$script_dir/..")"
+support_dir="$repo_root/tools/dev.d"
+
+# shellcheck source=tools/dev.d/lib/common.sh
+source "$support_dir/lib/common.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  ./tools/dev bootstrap [--check]
+
+Commands:
+  bootstrap          Create or verify repo-local host-native developer state.
+  bootstrap --check  Read-only validation of the same host-native contract.
+USAGE
+}
+
+bootstrap_check() {
+  ge_dev_bootstrap "$repo_root" "check"
+}
+
+bootstrap_write() {
+  ge_dev_bootstrap "$repo_root" "write"
+}
+
+main() {
+  local command="${1:-}"
+  case "$command" in
+    bootstrap)
+      shift
+      case "${1:-}" in
+        --check)
+          shift
+          [[ $# -eq 0 ]] || ge_dev_die "Unexpected bootstrap argument '$1'."
+          bootstrap_check
+          ;;
+        "")
+          bootstrap_write
+          ;;
+        *)
+          ge_dev_die "Unexpected bootstrap argument '$1'. Supported: --check"
+          ;;
+      esac
+      ;;
+    "" | -h | --help)
+      usage
+      ;;
+    *)
+      ge_dev_die "Unknown command '$command'. Run ./tools/dev --help."
+      ;;
+  esac
+}
+
+main "$@"

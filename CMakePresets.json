@@ -7,7 +7,7 @@
       "hidden": true,
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build/${presetName}",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "toolchainFile": "${sourceDir}/.cache/dev/vcpkg/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
@@ -15,6 +15,9 @@
     {
       "name": "linux-clang-asan",
       "inherits": "base",
+      "environment": {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:$penv{PATH}"
+      },
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
@@ -28,6 +31,9 @@
     {
       "name": "linux-gcc-rel",
       "inherits": "base",
+      "environment": {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:$penv{PATH}"
+      },
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
