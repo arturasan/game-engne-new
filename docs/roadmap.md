@@ -32,7 +32,7 @@ The Phase-0 scaffold now builds and tests on the Fedora path. The historical che
 
 The smallest possible end-to-end engine: open a window, run an ECS world, render a sprite, play a sound, exit cleanly. Everything an agent needs to verify "the engine works" by looking at pixels and listening to a beep.
 
-Current specs in `specs/` are M1 backlog unless their metadata marks them `deferred` or sets `Milestone: Future`. Spec `0013` exists because commands were split out of `0004` after resources/events merged; it remains M1 backlog so M2 scheduler planning starts from a clean deferred-mutation contract. Specs `0014` and `0015` are M1 enabling infrastructure discovered by renderer work. Spec `0014` is in review; for the single-agent workflow, `0015` follows it before ordinary feature work resumes. Neither spec adds an engine runtime dependency edge in the dependency DAG.
+Current specs in `specs/` are M1 backlog unless their metadata marks them `deferred` or sets `Milestone: Future`. Spec `0013` exists because commands were split out of `0004` after resources/events merged; it remains M1 backlog so M2 scheduler planning starts from a clean deferred-mutation contract. Specs `0014` and `0015` are M1 enabling infrastructure discovered by renderer work. Spec `0014` is implemented; for the single-agent workflow, `0015` follows it before ordinary feature work resumes. Neither spec adds an engine runtime dependency edge in the dependency DAG.
 
 | Spec | Title | Status | Sizing |
 |---|---|---|---|
@@ -49,7 +49,7 @@ Current specs in `specs/` are M1 backlog unless their metadata marks them `defer
 | 0011 | PBR mesh plugin — first lit cube (3D) | draft | 1 wk |
 | 0012 | Audio v0 — play a wav | draft | 0.3 wk |
 | 0013 | Commands: deferred world mutation | draft | TBD |
-| 0014 | Developer environment and IDE bootstrap | in-review | 1.0 wk |
+| 0014 | Developer environment and IDE bootstrap | implemented | 1.0 wk |
 | 0015 | Environment diagnostics and launch tooling | draft | 0.7 wk |
 
 **Demo gate:** `examples/sprite_demo` renders a sprite with input-driven movement; `examples/pbr_demo` renders a lit rotating cube; `examples/audio_demo` plays a beep on keypress. All three examples produce stable screenshot/replay outputs in CI.
@@ -72,7 +72,7 @@ Current specs in `specs/` are M1 backlog unless their metadata marks them `defer
                                   0012 Audio ────────────────────────────┘
 ```
 
-Specs 0001, 0002, 0003, 0007 are **leaves** (no deps) — work on them in parallel if multiple agents are available. Specs 0001 through 0005 are now implemented, and 0014 is in review. For single-agent execution, spec 0015 temporarily gates spec 0006 because renderer work exposed follow-up diagnostics and launch tooling gaps. For dependency-graph planning, 0014 and 0015 are tooling infrastructure and do not add engine runtime dependency edges.
+Specs 0001, 0002, 0003, 0007 are **leaves** (no deps) — work on them in parallel if multiple agents are available. Specs 0001 through 0005 and 0014 are now implemented. For single-agent execution, spec 0015 temporarily gates spec 0006 because renderer work exposed follow-up diagnostics and launch tooling gaps. For dependency-graph planning, 0014 and 0015 are tooling infrastructure and do not add engine runtime dependency edges.
 
 M1 demo evidence should include the normal runtime artifacts plus 0015 diagnostic evidence: a diagnostic bundle and a reproducible `./tools/dev run ...` command that proves the selected rendering mode.
 

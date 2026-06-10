@@ -2,10 +2,10 @@
 
 - Owner: TBD
 - Milestone: M1
-- Status: in-review
+- Status: implemented
 - Tracking issue: https://github.com/arturasan/game-engne-new/issues/16
 - Implementation PR: https://github.com/arturasan/game-engne-new/pull/18
-- Merged in: TBD
+- Merged in: 06adde296dcdbd4fee32bce521aa802f2eaac4cb
 
 ## Scope and motivation
 
@@ -182,9 +182,9 @@ Manual CLion run/debug and graphical smoke validation require the installed IDE
 and desktop session. They were validated on the regular Fedora KDE development
 machine before accepting 0014.
 
-## Current PR evidence
+## Final implementation notes
 
-Draft PR #18 now supports the host-native Fedora contract:
+PR #18 implemented the host-native Fedora contract:
 
 - `./tools/dev bootstrap`;
 - `./tools/dev bootstrap --check`;
@@ -195,10 +195,12 @@ Draft PR #18 now supports the host-native Fedora contract:
 
 The implementation intentionally removed the Toolbx-first daily path and the
 generated CLion wrapper/desktop/run-configuration templates. Normal host CLion
-startup is the supported IDE path.
+startup is the supported IDE path. Regular Fedora host-native development is
+the primary path, tracked CMake presets are the normal daily interface, and
+`VCPKG_ROOT` is not required.
 
-Manual validation recorded for draft PR #18 on the regular Fedora KDE
-development machine confirmed:
+Manual validation recorded for PR #18 on the regular Fedora KDE development
+machine confirmed:
 
 - CLion launched normally from KDE and opened
   the canonical repository checkout path;
@@ -210,6 +212,13 @@ development machine confirmed:
 - Git status remained clean after validation;
 - `./tools/dev bootstrap --check` passed after the manual IDE and graphics
   validation.
+
+After PR #18 merged in commit
+`06adde296dcdbd4fee32bce521aa802f2eaac4cb`, post-merge validation also passed:
+
+- `./tools/dev bootstrap --check`;
+- `env -u VCPKG_ROOT cmake --workflow --preset check`;
+- 53/53 selected fast tests.
 
 ## Tests and CI
 
