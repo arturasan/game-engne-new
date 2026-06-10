@@ -74,7 +74,7 @@ Current specs in `specs/` are M1 backlog unless their metadata marks them `defer
 
 Specs 0001, 0002, 0003, 0007 are **leaves** (no deps) — work on them in parallel if multiple agents are available. Specs 0001 through 0005 and 0014 are now implemented. For single-agent execution, spec 0015 temporarily gates spec 0006 because renderer work exposed follow-up diagnostics and launch tooling gaps. For dependency-graph planning, 0014 and 0015 are tooling infrastructure and do not add engine runtime dependency edges.
 
-M1 demo evidence should include the normal runtime artifacts plus 0015 diagnostic evidence: a diagnostic bundle and a reproducible `./tools/dev run ...` command that proves the selected rendering mode.
+M1 demo evidence should include the normal runtime artifacts plus 0015 diagnostic evidence: a diagnostic bundle, `build/diagnostics/system.json`, and a reproducible `./tools/dev run ...` command that proves the selected rendering mode through the rendered-frame marker. Headless smoke can be CI evidence; visible windowed software rendering and RTX/NVIDIA hardware presentation are local/manual evidence unless a compositor or hardware harness is explicitly scoped.
 
 ---
 
